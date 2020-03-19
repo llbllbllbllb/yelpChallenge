@@ -27,6 +27,47 @@ CREATE TABLE business (
 DROP TABLE IF EXISTS attributes;
 -- SHOW WARNINGS;
 CREATE TABLE attributes (
+  business_id CHAR(22) NOT NULL,
+
+  GoodForKids BOOLEAN DEFAULT NULL,
+  RestaurantsReservations BOOLEAN DEFAULT NULL,
+  Caters BOOLEAN DEFAULT NULL,
+  NoiseLevel VARCHAR(10) DEFAULT NULL,
+  RestaurantsTableService BOOLEAN DEFAULT NULL,
+  RestaurantsTakeOut BOOLEAN DEFAULT NULL,
+  RestaurantsPriceRange2 INT DEFAULT NULL,
+  OutdoorSeating BOOLEAN DEFAULT NULL,
+  BikeParking BOOLEAN DEFAULT NULL,
+  HasTV BOOLEAN DEFAULT NULL,
+  WiFi VARCHAR(5) DEFAULT NULL,
+  Alcohol VARCHAR(20) DEFAULT NULL,
+  RestaurantsAttire VARCHAR(10) DEFAULT NULL,
+  RestaurantsGoodForGroups BOOLEAN DEFAULT NULL,
+  RestaurantsDelivery BOOLEAN DEFAULT NULL,
+  BusinessAcceptsCreditCards BOOLEAN DEFAULT NULL,
+  BusinessAcceptsBitcoin BOOLEAN DEFAULT NULL,
+  ByAppointmentOnly BOOLEAN DEFAULT NULL,
+  AcceptsInsurance BOOLEAN DEFAULT NULL,
+  GoodForDancing BOOLEAN DEFAULT NULL,
+  CoatCheck BOOLEAN DEFAULT NULL,
+  HappyHour BOOLEAN DEFAULT NULL,
+  WheelchairAccessible BOOLEAN DEFAULT NULL,
+  DogsAllowed BOOLEAN DEFAULT NULL,
+  BYOBCorkage VARCHAR(10) DEFAULT NULL,
+  DriveThru BOOLEAN DEFAULT NULL,
+  Smoking VARCHAR(10) DEFAULT NULL,
+  AgesAllowed VARCHAR(10) DEFAULT NULL,
+  Corkage BOOLEAN DEFAULT NULL,
+  BYOB BOOLEAN DEFAULT NULL,
+  Open24Hours BOOLEAN DEFAULT NULL,
+  RestaurantsCounterService BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id)
+
+
+
+
+
 
 );
 
