@@ -13,14 +13,13 @@ CREATE TABLE business (
   name VARCHAR(100),
   address VARCHAR(200),
   city VARCHAR(50),
-  state CHAR(2),
+  state VARCHAR(5),
   postal_code VARCHAR(10),
   latitude FLOAT,
   longitude FLOAT,
   stars FLOAT,
   review_count FLOAT,
   is_open INT,
-
 
   PRIMARY KEY(business_id)
 );

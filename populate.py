@@ -6,7 +6,7 @@ def ConnectDB():
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        passwd="mysql",
+        passwd="15625067696aA",
         database="yelp",
         auth_plugin='mysql_native_password'
     )
@@ -88,19 +88,52 @@ def checkCategories(path, out):
     print(category_set)
     print(len(category_set))
 
+def checkBusiness(business_file_path,db):
+    mycursor = db.cursor()
+    mycursor.execute("delete from business;")
+    db.commit()
+    total_line = 0
+    with open(business_file_path) as f:
+
+            for line in f:
+                total_line += 1
+            print("total_line:", total_line)
+    with open(business_file_path) as f:
+
+
+        i = 0
+        colDict = ['business_id','name','address','city','state','postal_code','latitude','longitude','stars','review_count','is_open']
+        for line in f:
+            print('Progress: %d / %d'%(i,total_line) , end='\r')
+            data = json.loads(line)
+            sql = "insert into business (business_id,name,address,city,state,postal_code,latitude,longitude,stars,review_count,is_open) values ("
+
+            for key in colDict:
+
+                sql += '"'+str(data[key]).replace('"',"'")+'",'
+            sql = sql[:-1]
+            sql += ");"
+            # print(sql)
+            mycursor.execute(sql)
+            db.commit()
+
+            i+=1
+
 
 
 
 if __name__ == "__main__":
-    user_file_path = "/yelp_dataset/user.json"
-    photo_file_path = "/yelp_dataset/photo.json"
-    tip_file_path = "/yelp_dataset/tip.json"
-    review_file_path = "/yelp_dataset/review.json"
-    checkin_file_path = "/yelp_dataset/checkin.json"
-    business_file_path = "yelp_dataset/business.json"
+    user_file_path = "../yelp_dataset/user.json"
+    photo_file_path = "../yelp_dataset/photo.json"
+    tip_file_path = "../yelp_dataset/tip.json"
+    review_file_path = "../yelp_dataset/review.json"
+    checkin_file_path = "../yelp_dataset/checkin.json"
+    business_file_path = "../yelp_dataset/business.json"
     out_path = "./attributes.json"
     category_out_path = "./categories.json"
-    # PopulateUser(user_file_path)
-    # checkAttributes(business_file_path, out_path)
-    checkCategories(business_file_path, category_out_path)
+
+    db = ConnectDB()
+    checkBusiness(business_file_path,db)
+
+
     print("finish")
