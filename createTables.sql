@@ -113,6 +113,69 @@ CREATE TABLE user (
 
 );
 
+
+-- ----------------------------
+--  Table structure for `friend`
+-- ----------------------------
+DROP TABLE IF EXISTS friend;
+-- SHOW WARNINGS;
+CREATE TABLE friend (
+  user_id CHAR(22) NOT NULL,
+  friend_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id, friend_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(friend_id) REFERENCES user(friend_id),
+
+);
+
+-- ----------------------------
+--  Table structure for `eliteYear`
+-- ----------------------------
+DROP TABLE IF EXISTS eliteYear;
+-- SHOW WARNINGS;
+CREATE TABLE eliteYear (
+  user_id CHAR(22) NOT NULL,
+  eliteYear INT(4) NOT NULL,
+
+  PRIMARY KEY(user_id, eliteYear),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+
+);
+
+
+-- ----------------------------
+--  Table structure for `review`
+-- ----------------------------
+DROP TABLE IF EXISTS review;
+-- SHOW WARNINGS;
+CREATE TABLE review (
+  review_id CHAR(22) NOT NULL,
+
+  user_id CHAR(22) NOT NULL,
+  business_id CHAR(22) NOT NULL,
+
+  stars INT NOT NULL,
+  reviewDate DATE NOT NULL,
+  reviewText VARCHAR(200),
+
+  useful INT DEFAULT 0,
+  funny INT DEFAULT 0,
+  cool INT DEFAULT 0,
+
+
+
+  PRIMARY KEY(review_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+
+);
+
+
+
+
+
 -- ----------------------------
 --  Table structure for `checkin`
 -- ----------------------------
@@ -160,7 +223,7 @@ CREATE TABLE photo (
   label VARCHAR(10),
 
   PRIMARY KEY(photo_id),
-  FOREIGN KEY(business_id) REFERENCES business(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
 
 
 );
