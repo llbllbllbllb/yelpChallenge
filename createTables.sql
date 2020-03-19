@@ -63,13 +63,163 @@ CREATE TABLE attributes (
   RestaurantsCounterService BOOLEAN DEFAULT NULL,
 
   PRIMARY KEY(business_id)
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+);
 
 
+-- ----------------------------
+--  Table structure for `attrGoodForMeal`
+-- ----------------------------
+DROP TABLE IF EXISTS attrGoodForMeal;
+-- SHOW WARNINGS;
+CREATE TABLE attrGoodForMeal (
+  business_id CHAR(22) NOT NULL,
 
+  dessert BOOLEAN DEFAULT NULL,
+  latenight BOOLEAN DEFAULT NULL,
+  lunch BOOLEAN DEFAULT NULL,
+  dinner BOOLEAN DEFAULT NULL,
+  brunch BOOLEAN DEFAULT NULL,
+  breakfast BOOLEAN DEFAULT NULL,
 
-
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
 
 );
+
+
+-- ----------------------------
+--  Table structure for `attrBusinessParking`
+-- ----------------------------
+DROP TABLE IF EXISTS attrBusinessParking;
+-- SHOW WARNINGS;
+CREATE TABLE attrBusinessParking (
+  business_id CHAR(22) NOT NULL,
+
+  garage BOOLEAN DEFAULT NULL,
+  street BOOLEAN DEFAULT NULL,
+  validated BOOLEAN DEFAULT NULL,
+  lot BOOLEAN DEFAULT NULL,
+  valet BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+
+-- ----------------------------
+--  Table structure for `attrAmbience`
+-- ----------------------------
+DROP TABLE IF EXISTS attrAmbience;
+-- SHOW WARNINGS;
+CREATE TABLE attrAmbience (
+  business_id CHAR(22) NOT NULL,
+
+  romantic BOOLEAN DEFAULT NULL,
+  intimate BOOLEAN DEFAULT NULL,
+  classy BOOLEAN DEFAULT NULL,
+  hipster BOOLEAN DEFAULT NULL,
+  divey BOOLEAN DEFAULT NULL,
+  touristy BOOLEAN DEFAULT NULL,
+  trendy BOOLEAN DEFAULT NULL,
+  upscale BOOLEAN DEFAULT NULL,
+  casual BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+-- ----------------------------
+--  Table structure for `attrMusic`
+-- ----------------------------
+DROP TABLE IF EXISTS attrMusic;
+-- SHOW WARNINGS;
+CREATE TABLE attrMusic (
+  business_id CHAR(22) NOT NULL,
+
+  dj BOOLEAN DEFAULT NULL,
+  background_music BOOLEAN DEFAULT NULL,
+  no_music BOOLEAN DEFAULT NULL,
+  jukebox BOOLEAN DEFAULT NULL,
+  live BOOLEAN DEFAULT NULL,
+  video BOOLEAN DEFAULT NULL,
+  karaoke BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+
+-- ----------------------------
+--  Table structure for `attrBestNights`
+-- ----------------------------
+DROP TABLE IF EXISTS attrBestNights;
+-- SHOW WARNINGS;
+CREATE TABLE attrBestNights (
+  business_id CHAR(22) NOT NULL,
+
+  monday BOOLEAN DEFAULT NULL,
+  tuesday BOOLEAN DEFAULT NULL,
+  friday BOOLEAN DEFAULT NULL,
+  wednesday BOOLEAN DEFAULT NULL,
+  thursday BOOLEAN DEFAULT NULL,
+  sunday BOOLEAN DEFAULT NULL,
+  saturday BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+
+-- ----------------------------
+--  Table structure for `attrHairSpecializesIn`
+-- ----------------------------
+DROP TABLE IF EXISTS attrHairSpecializesIn;
+-- SHOW WARNINGS;
+CREATE TABLE attrHairSpecializesIn (
+  business_id CHAR(22) NOT NULL,
+
+  straightperms BOOLEAN DEFAULT NULL,
+  coloring BOOLEAN DEFAULT NULL,
+  extensions BOOLEAN DEFAULT NULL,
+  africanamerican BOOLEAN DEFAULT NULL,
+  curly BOOLEAN DEFAULT NULL,
+  kids BOOLEAN DEFAULT NULL,
+  perms BOOLEAN DEFAULT NULL,
+  asian BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+
+-- ----------------------------
+--  Table structure for `attrDietaryRestrictions`
+-- ----------------------------
+DROP TABLE IF EXISTS attrDietaryRestrictions;
+-- SHOW WARNINGS;
+CREATE TABLE attrDietaryRestrictions (
+  business_id CHAR(22) NOT NULL,
+
+  dairy-free BOOLEAN DEFAULT NULL,
+  gluten-free BOOLEAN DEFAULT NULL,
+  vegan BOOLEAN DEFAULT NULL,
+  kosher BOOLEAN DEFAULT NULL,
+  halal BOOLEAN DEFAULT NULL,
+  soy-free BOOLEAN DEFAULT NULL,
+  vegetarian BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+
+
 
 
 -- ----------------------------
