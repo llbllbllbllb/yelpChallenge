@@ -1,12 +1,16 @@
 -- ----------------------------
 --  Table structure for `User`
 -- ----------------------------
-DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS business;
 -- SHOW WARNINGS;
-CREATE TABLE User (
-  user_id INT(10) NOT NULL,
-  user_name varchar(100) NOT NULL,
-  gender CHAR(1) DEFAULT NULL,
-  last_refresh_time INT(10) NOT NULL,
+CREATE TABLE business (
+  business_id CHAR(22) NOT NULL,
+  name VARCHAR(100),
+  address VARCHAR(200),
+  city VARCHAR(50),
+  state CHAR(2),
+  postal_code VARCHAR(10),
+  latitude FLOAT 
+
   PRIMARY KEY(user_id)
 );
