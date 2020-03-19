@@ -1,3 +1,8 @@
+
+drop database if EXISTS yelp;
+create database yelp;
+use yelp;
+
 -- ----------------------------
 --  Table structure for `business`
 -- ----------------------------
@@ -62,7 +67,7 @@ CREATE TABLE attributes (
   Open24Hours BOOLEAN DEFAULT NULL,
   RestaurantsCounterService BOOLEAN DEFAULT NULL,
 
-  PRIMARY KEY(business_id)
+  PRIMARY KEY(business_id),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
 );
 
@@ -206,12 +211,12 @@ DROP TABLE IF EXISTS attrDietaryRestrictions;
 CREATE TABLE attrDietaryRestrictions (
   business_id CHAR(22) NOT NULL,
 
-  dairy-free BOOLEAN DEFAULT NULL,
-  gluten-free BOOLEAN DEFAULT NULL,
+  dairy_free BOOLEAN DEFAULT NULL,
+  gluten_free BOOLEAN DEFAULT NULL,
   vegan BOOLEAN DEFAULT NULL,
   kosher BOOLEAN DEFAULT NULL,
   halal BOOLEAN DEFAULT NULL,
-  soy-free BOOLEAN DEFAULT NULL,
+  soy_free BOOLEAN DEFAULT NULL,
   vegetarian BOOLEAN DEFAULT NULL,
 
   PRIMARY KEY(business_id),
@@ -316,7 +321,7 @@ CREATE TABLE friend (
 
   PRIMARY KEY(user_id, friend_id),
   FOREIGN KEY(user_id) REFERENCES user(user_id),
-  FOREIGN KEY(friend_id) REFERENCES user(friend_id),
+  FOREIGN KEY(friend_id) REFERENCES user(user_id)
 
 );
 
