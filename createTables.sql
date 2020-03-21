@@ -233,7 +233,7 @@ DROP TABLE IF EXISTS categories;
 -- SHOW WARNINGS;
 CREATE TABLE categories (
   business_id CHAR(22) NOT NULL,
-  category VARCHAR(30) NOT NULL,
+  category VARCHAR(256) NOT NULL,
 
   PRIMARY KEY(business_id,category),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
@@ -414,7 +414,7 @@ CREATE TABLE photo (
   photo_id CHAR(22) NOT NULL,
   business_id CHAR(22) NOT NULL,
 
-  caption VARCHAR(100),
+  caption VARCHAR(256),
   label VARCHAR(10),
 
   PRIMARY KEY(photo_id),
