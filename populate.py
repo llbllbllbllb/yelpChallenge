@@ -71,36 +71,82 @@ def checkAttributes(path, out):
 def populateAttributes(path):
     mydb = connectDB()
     cursor = mydb.cursor()
-    type_set = set()
+    cursor.execute("DELETE FROM attributes;")
+    cursor.execute("DELETE FROM attrAmbience;")
+    cursor.execute("DELETE FROM attrBestNights;")
+    cursor.execute("DELETE FROM attrBusinessParking;")
+    cursor.execute("DELETE FROM attrDietaryRestrictions;")
+    cursor.execute("DELETE FROM attrGoodForMeal;")
+    cursor.execute("DELETE FROM attrHairSpecializesIn;")
+    cursor.execute("DELETE FROM attrMusic;")
+    mydb.commit()
+    total = 0
+    with open(path) as f:
+        for line in f:
+            total += 1
+    print("total", total)
+    count = 0
     with open(path) as f:
         for line in f:
             # print(line)
             data = json.loads(line)
+            id = data["business_id"].strip()
+            print(" %d / %d"%(count, total), end='\r')
             if data["attributes"] != None:
+                singleAttributes = {}
+                # print("-----1----")
                 for k, v in data['attributes'].items():
-                    # string to dict
                     temp = ast.literal_eval(v)
-                    table = k.strip()
-                    id = data["business_id"].strip()
+                    k_name = k.strip()
+                    str_multiple_attributes = "INSERT INTO attr" + k_name + " (business_id"
                     if isinstance(temp, dict):
-                        sql = "INSERT INTO attr" + table + " (business_id) VALUES (%s)";
-                        print(sql, id)
-                        cursor.execute(sql, (id, ))
-                        for kk, vv in temp.items():
-                            kk_name = kk.strip()
-                            vv_value = vv
-                            update_sql = "UPDATE " + table + "SET " + kk_name + " = " + vv_value
-                            cursor.execute(update_sql)
+                        for kk in temp.keys():
+                            kk = kk.replace('-', '_')
+                            str_multiple_attributes += ", " + kk
+                        str_multiple_attributes += ") VALUES ('" + id + "'"
+                        for vv in temp.values():
+                            str_multiple_attributes += ", " + str(vv)
+                        str_multiple_attributes += ");"
+                        print(str_multiple_attributes)
+                        try:
+                            cursor.execute(str_multiple_attributes)
+                            mydb.commit()
+                        except mysql.connector.Error as error:
+                            print(error)
+                            mydb.rollback()
+                            cursor.close()
+                            mydb.close()
+                            return
                     else:
-                        k_name = k.strip()
-                        v_value = v.strip()
-                        sql = "INSERT INTO attributes (business_id) VALUES (%s)"
-                        cursor.execute(sql, (id, ))
-                        update_sql = "UPDATE attributes SET " + k_name + " = " + v_value
-                        cursor.execute(update_sql)
-                    type_set.add(type(temp))
-    mydb.commit()
-    print(type_set)
+                        v_value = str(v.strip())
+                        if v_value is not None and v_value.upper() != 'NONE':
+                            singleAttributes[k_name] = v_value
+                str_single_attributes = "INSERT INTO attributes (business_id"
+                for k in singleAttributes.keys():
+                    k = k.replace('-', '_')
+                    str_single_attributes = str_single_attributes +", " + k
+                str_single_attributes += ") VALUES ('" + id + "'"
+                for v in singleAttributes.values():
+                    if v[0] == 'u' or v[0] == 'b':
+                        v = v[1:]
+                    str_single_attributes += ", " + str(v)
+                str_single_attributes += ");"
+                # print(str_single_attributes)
+                try:
+                    cursor.execute(str_single_attributes)
+                    mydb.commit()
+                except mysql.connector.Error as error:
+                    print(error)
+                    mydb.rollback()
+                    cursor.close()
+                    mydb.close()
+                    return
+            count += 1
+                # print("-----2----")
+
+
+                    # type_set.add(type(temp))
+
     # element = None
     # key = None
     # print(len(res.keys()))
@@ -137,7 +183,8 @@ def checkCategories(path, out):
 def populateUser(path):
     mydb = connectDB()
     cursor = mydb.cursor()
-
+    cursor.execute("DELETE FROM user")
+    mydb.commit()
     with open(path) as f:
         count = 0
         for line in f:
@@ -185,7 +232,8 @@ def populateUser(path):
 def populateFriends(path):
     mydb = connectDB()
     cursor = mydb.cursor()
-
+    cursor.execute("DELETE FROM friend;")
+    mydb.commit()
     with open(path) as f:
         count = 0
         for line in f:
@@ -195,13 +243,24 @@ def populateFriends(path):
             if friends is not None:
                 friends_list = friends.split(',')
                 friends_list = [friend.strip() for friend in friends_list]
+                print(" %d / 1637138"%(count), end='\r')
                 for friend in friends_list:
-                    query = "INSERT INTO friend (user_id, friend_id) VALUES (%s, %s)"
+                    # friend user_id may not in the user table
+                    select_query  = "SELECT user_id FROM user WHERE user_id = '" + friend + "';"
+                    cursor.execute(select_query)
+                    result_exist = cursor.fetchall()
+
+                    if result_exist is None or len(result_exist) == 0:
+                        continue
+                    query = "INSERT INTO friend (user_id, friend_id) VALUES (%s, %s);"
                     value = (user_id, friend)
+
                     try:
+                        # print(value)
                         cursor.execute(query, value)
                         mydb.commit()
-                        print(" %d / 1637138"%(count), end='\r')
+
+
                     except mysql.connector.Error as error:
                         print(error)
                         mydb.rollback()
@@ -212,7 +271,7 @@ def populateFriends(path):
         cursor.close()
         mydb.close()
 
-def checkBusiness(business_file_path,db):
+def checkBusiness(business_file_path, db):
     mycursor = db.cursor()
     mycursor.execute("delete from business;")
     db.commit()
@@ -244,18 +303,21 @@ def checkBusiness(business_file_path,db):
             i+=1
 
 if __name__ == "__main__":
-    user_file_path = "yelp_dataset/user.json"
+    user_file_path = "../yelp_dataset/user.json"
     photo_file_path = "yelp_dataset/photo.json"
     tip_file_path = "yelp_dataset/tip.json"
     review_file_path = "yelp_dataset/review.json"
     checkin_file_path = "yelp_dataset/checkin.json"
-    business_file_path = "yelp_dataset/business.json"
+    business_file_path = "../yelp_dataset/business.json"
     attributes_out_path = "./attributes.json"
     category_out_path = "./categories.json"
     # PopulateUser(user_file_path)
     # checkAttributes(business_file_path, out_path)
     # checkCategories(business_file_path, category_out_path)
     # createAttributesTables(category_out_path)
-    # populateAttributes(business_file_path)
-    populateUser(user_file_path)
+    populateAttributes(business_file_path)
+    # populateUser(user_file_path)
+    # db = connectDB()
+    # checkBusiness(business_file_path, db)
+    # populateFriends(user_file_path)
     print("finish")
