@@ -414,7 +414,7 @@ CREATE TABLE photo (
   photo_id CHAR(22) NOT NULL,
   business_id CHAR(22) NOT NULL,
 
-  caption VARCHAR(256),
+  caption VARCHAR(25),
   label VARCHAR(10),
 
   PRIMARY KEY(photo_id),
