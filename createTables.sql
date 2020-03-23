@@ -57,7 +57,7 @@ CREATE TABLE attributes (
   HappyHour BOOLEAN DEFAULT NULL,
   WheelchairAccessible BOOLEAN DEFAULT NULL,
   DogsAllowed BOOLEAN DEFAULT NULL,
-  BYOBCorkage VARCHAR(20) DEFAULT NULL,
+  BYOBCorkage VARCHAR(100) DEFAULT NULL,
   DriveThru BOOLEAN DEFAULT NULL,
   Smoking VARCHAR(10) DEFAULT NULL,
   AgesAllowed VARCHAR(10) DEFAULT NULL,
@@ -351,8 +351,9 @@ CREATE TABLE review (
   business_id CHAR(22) NOT NULL,
 
   stars INT NOT NULL,
-  reviewDate DATE NOT NULL,
-  reviewText VARCHAR(200),
+  reviewDate DATE,
+  reviewTime TIME,
+  reviewText TEXT,
 
   useful INT DEFAULT 0,
   funny INT DEFAULT 0,

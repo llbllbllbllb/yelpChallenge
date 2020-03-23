@@ -1,12 +1,14 @@
 import mysql.connector
 import json
 import ast
+import os
+
 
 def connectDB():
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        passwd="mysql",
+        passwd="15625067696aA",
         database="yelp",
         auth_plugin='mysql_native_password'
     )
@@ -246,12 +248,12 @@ def populateFriends(path):
                 print(" %d / 1637138"%(count), end='\r')
                 for friend in friends_list:
                     # friend user_id may not in the user table
-                    select_query  = "SELECT user_id FROM user WHERE user_id = '" + friend + "';"
-                    cursor.execute(select_query)
-                    result_exist = cursor.fetchall()
-
-                    if result_exist is None or len(result_exist) == 0:
-                        continue
+                    # select_query  = "SELECT user_id FROM user WHERE user_id = '" + friend + "';"
+                    # cursor.execute(select_query)
+                    # result_exist = cursor.fetchall()
+                    #
+                    # if result_exist is None or len(result_exist) == 0:
+                    #     continue
                     query = "INSERT INTO friend (user_id, friend_id) VALUES (%s, %s);"
                     value = (user_id, friend)
 
@@ -260,16 +262,106 @@ def populateFriends(path):
                         cursor.execute(query, value)
                         mydb.commit()
 
-
+# https://yelp-dataset.s3.amazonaws.com/YDC14/yelp_dataset.tgz?Signature=4kJOz99XxDBiIusBUHovwN19i1M%3D&Expires=1584818217&AWSAccessKeyId=AKIAJ3CYHOIAD6T2PGKA
                     except mysql.connector.Error as error:
-                        print(error)
-                        mydb.rollback()
-                        cursor.close()
-                        mydb.close()
-                        return
+                        # print(error)
+                        continue
+                        # mydb.rollback()
+                        # cursor.close()
+                        # mydb.close()
+                        # return
             count += 1
         cursor.close()
         mydb.close()
+
+
+def populateReview(review_file_path):
+    if os.path.exists("generateReview.sql"):
+        os.remove("generateReview.sql")
+
+    gff =  open("generateReview.sql", "a")
+    gff.write("DELETE FROM review;\n")
+    gff.write("BEGIN;\n")
+
+    count = 0
+    set_batch_size = 100
+    batch_size = set_batch_size
+
+    file_count = 1
+    # test_size = 100000
+    with open(review_file_path) as f:
+        print("test")
+        query = "\n INSERT INTO review (review_id,user_id, business_id,stars,reviewDate,reviewTime,reviewText,useful,funny,cool) VALUES "
+        for line in f:
+            if batch_size == set_batch_size:
+                gff.write(query)
+            count+=1
+            print(" %d / 6685900"%(count), end='\r')
+            data = json.loads(line)
+
+            review_id = data["review_id"]
+            user_id = data["user_id"]
+            business_id = data["business_id"]
+            stars = data["stars"]
+            date_time = data["date"]
+            reviewText = data["text"]
+            useful = data["useful"]
+            funny = data["funny"]
+            cool = data["cool"]
+
+            reviewDate,reviewTime = date_time.split()
+
+            reviewText = reviewText.replace('"',"")
+            reviewText = reviewText.replace(';',"")
+            reviewText = reviewText.replace('\\', '/ ')
+            # ('rvtLwn1raY-MjrTATz8Ogg','zJFCS9vn2PuQqRsWg6Gb1w','16Fplxu-OwVmTEFxQAUP4g','1.0','2018-07-14','16:01:46',"Worst service ever. Manager didnt care. Photographer was rude. Asked to be called back and never happened",'0','0','0'),('0t62T22zCEiv-rjRGPL-Aw','FGMtqYSHcjAnH5YVoDKCvQ','GMrwDXRlAZU2zj5nH6l4vQ','2.0','2017-10-19','07:32:31',"ORDERED TO GO today  ... always get our breakfast sandwich order here when I'm in Vegas. Today sandwiches were AWFUL. The bread today are BRICK HARD. SUCKS  I understand when trying to save money. BUT THIS SUCKS .. maybe we should stick with PHO from now on  \¿¿¿¿\",'0','0','0')
+
+            value = "(\'"+str(review_id)+"\',"+"\'"+ str(user_id)+"\',"+"\'"+ str(business_id)+"\',"+"\'"+ str(stars)+"\',"+"\'"+ str(reviewDate)+"\',"+"\'"+str(reviewTime)+"\',"+"\""+ str(reviewText)+"\","+"\'"+ str(useful)+"\',"+"\'"+ str(funny)+"\',"+"\'"+ str(cool)+"\')"
+
+            batch_size-=1;
+            if batch_size == 0:
+                value += ";"
+                batch_size = set_batch_size
+            else:
+                value += ","
+
+            gff.write(value)
+            # test_size-=1
+            # if test_size == 0:
+            #     gff.write(";\n")
+            #     gff.write("\nCOMMIT;")
+            #     gff.close()
+            #     exit()
+
+
+    gff.write(";")
+    gff.write("\nCOMMIT;")
+    gff.close()
+
+
+def populateTip(tip_file_path):
+    mydb = connectDB()
+    cursor = mydb.cursor()
+    cursor.execute("DELETE FROM tip;")
+
+    with open(review_file_path) as f:
+        count = 0
+        for line in f:
+            print(" %d / total_size"%(count), end='\r')
+            data = json.loads(line)
+
+            business_id = data["business_id"]
+            user_id = data["user_id"]
+            tipText = data["text"]
+            postDate = data["date"]
+            compliment_count = ["compliment_count"]
+
+            # process postDate
+
+
+
+
+
 
 def checkBusiness(business_file_path, db):
     mycursor = db.cursor()
@@ -305,19 +397,20 @@ def checkBusiness(business_file_path, db):
 if __name__ == "__main__":
     user_file_path = "../yelp_dataset/user.json"
     photo_file_path = "yelp_dataset/photo.json"
-    tip_file_path = "yelp_dataset/tip.json"
-    review_file_path = "yelp_dataset/review.json"
+    tip_file_path = "../yelp_dataset/tip.json"
+    review_file_path = "../yelp_dataset/review.json"
     checkin_file_path = "yelp_dataset/checkin.json"
     business_file_path = "../yelp_dataset/business.json"
     attributes_out_path = "./attributes.json"
     category_out_path = "./categories.json"
-    # PopulateUser(user_file_path)
+    # populateUser(user_file_path)
     # checkAttributes(business_file_path, out_path)
     # checkCategories(business_file_path, category_out_path)
     # createAttributesTables(category_out_path)
-    populateAttributes(business_file_path)
+    # # populateAttributes(business_file_
+    populateTip(tip_file_path)
     # populateUser(user_file_path)
     # db = connectDB()
     # checkBusiness(business_file_path, db)
-    # populateFriends(user_file_path)
+    # populateReview(user_file_path)
     print("finish")
