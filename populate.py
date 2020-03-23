@@ -1,8 +1,12 @@
 import mysql.connector
 import json
 import ast
+<<<<<<< HEAD
 import os
 
+=======
+import time
+>>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
 
 def connectDB():
     mydb = mysql.connector.connect(
@@ -109,7 +113,8 @@ def populateAttributes(path):
                         for vv in temp.values():
                             str_multiple_attributes += ", " + str(vv)
                         str_multiple_attributes += ");"
-                        print(str_multiple_attributes)
+                        # print(str_multiple_attributes)
+
                         try:
                             cursor.execute(str_multiple_attributes)
                             mydb.commit()
@@ -144,22 +149,6 @@ def populateAttributes(path):
                     mydb.close()
                     return
             count += 1
-                # print("-----2----")
-
-
-                    # type_set.add(type(temp))
-
-    # element = None
-    # key = None
-    # print(len(res.keys()))
-    # for k, v in res.items():
-    #     for kk, vv in v.items():
-    #         # print(len(vv))
-    #         if element is None or len(vv) > len(element):
-    #             element = vv
-    #             key = k
-    # print(element)
-    # return res
 
 
 def checkCategories(path, out):
@@ -182,10 +171,69 @@ def checkCategories(path, out):
     print(category_set)
     print(len(category_set))
 
+def populateElite(path):
+    mydb = connectDB()
+    cursor = mydb.cursor()
+    cursor.execute("DELETE FROM eliteYear;")
+    mydb.commit()
+    out_file_path = "./eliteYear_data.sql"
+    count = 0
+    total = 1000
+    with open(out_file_path, 'w') as fd:
+        fd.write('BEGIN;\n')
+        fd.close()
+
+    print("total: ", total)
+    insert_query = "INSERT INTO eliteYear VALUES ";
+    with open(path) as f:
+        for line in f:
+            data = json.loads(line)
+            user_id = data["user_id"].strip()
+            elites = data["elite"]
+
+            print("progress: %d / %d "%(count, total), end='\r')
+
+            elites_list = elites.split(',')
+
+            if elites != None and len(elites) != 0:
+                for elite_index in range(len(elites_list)):
+                    year = elites_list[elite_index].strip()
+                    if count == 0:
+                        insert_query += "('%s', %s)"%(user_id, year)
+                    else:
+                        insert_query += ", ('%s', %s)"%(user_id, year)
+                    count += 1
+            if count > total:
+                with open(out_file_path, 'a') as fd:
+                    insert_query += ";"
+                    fd.write(insert_query)
+                    fd.write('\n')
+                    count = 0
+                    insert_query = "INSERT INTO eliteYear VALUES ";
+                    fd.close()
+                    # try:
+                    #     cursor.execute(insert_query, val)
+                    #     mydb.commit()
+                    # except mysql.connector.Error as error:
+                    #     print(error)
+                    #     print(val)
+                    #     print(insert_query)
+                    #     mydb.rollback()
+                    #     cursor.close()
+                    #     mydb.close()
+                    #     return
+
+    with open(out_file_path, 'a') as fd:
+        if len(insert_query) > 30:
+            insert_query += ";"
+            fd.write(insert_query)
+            fd.write('\n')
+        fd.write('COMMIT;\n')
+        fd.close()
 def populateUser(path):
     mydb = connectDB()
     cursor = mydb.cursor()
-    cursor.execute("DELETE FROM user")
+    cursor.execute("DELETE FROM user;")
     mydb.commit()
     with open(path) as f:
         count = 0
@@ -274,6 +322,7 @@ def populateFriends(path):
         cursor.close()
         mydb.close()
 
+<<<<<<< HEAD
 
 def populateReview(review_file_path):
     if os.path.exists("generateReview.sql"):
@@ -360,6 +409,156 @@ def populateTip(tip_file_path):
 
 
 
+=======
+def populateCategories(path):
+    mydb = connectDB()
+    cursor = mydb.cursor()
+    cursor.execute("DELETE FROM CATEGORIES;")
+    mydb.commit()
+    total = 0
+    count = 0
+    with open(path) as f:
+        for line in f:
+            total += 1
+
+    with open(path) as f:
+        for line in f:
+            data = json.loads(line)
+            id = data['business_id'].strip()
+            categories = data['categories']
+
+            print(" %d / %d"%(count, total), end='\r')
+            count += 1
+
+            if categories is not None and len(categories) != 0:
+                categories_list = categories.split(',')
+                for category in categories_list:
+                    category = category.strip()
+                    insert_query = "INSERT INTO categories (business_id, category) VALUES ('" + id + "'" + ", \"" + category + "\");"
+                    # print(insert_query)
+                    try:
+                        cursor.execute(insert_query)
+                        mydb.commit()
+                    except mysql.connector.Error as error:
+                        continue
+
+def populateHours(path):
+    mydb = connectDB()
+    cursor = mydb.cursor()
+    cursor.execute("DELETE FROM hours;")
+    mydb.commit()
+    count = 0
+    total = 0
+    with open (path) as f:
+        for line in f:
+            total += 1
+
+    with open(path) as f:
+        for line in f:
+            data = json.loads(line)
+            hours = data['hours']
+            id = data['business_id'].strip()
+
+            print(" %d / %d"%(count, total), end='\r')
+            count += 1
+
+            if hours is not None and len(hours) != 0:
+                insert_query = "INSERT INTO hours (business_id"
+                for k in hours.keys():
+                    ele = k.strip().upper()
+                    if ele == "MONDAY":
+                        insert_query = insert_query +  ", mondayStart, " + "mondayEnd"
+                    elif ele == "TUESDAY":
+                        insert_query = insert_query + ", tuesdayStart, " + "tuesdayEnd"
+                    elif ele == "WEDNESDAY":
+                        insert_query = insert_query + ", wednesdayStart, " + "wednesdayEnd"
+                    elif ele == "THURSDAY":
+                        insert_query = insert_query + ", thursdayStart, " + "thursdayEnd"
+                    elif ele == "FRIDAY":
+                        insert_query = insert_query + ", fridayStart, " + "fridayEnd"
+                    elif ele == "SATURDAY":
+                        insert_query = insert_query + ", saturdayStart, " + "saturdayEnd"
+                    elif ele == "SUNDAY":
+                        insert_query = insert_query + ", sundayStart, " + "sundayEnd"
+                insert_query += ") VALUES ('" + id + "'"
+                for v in hours.values():
+                    periods = v.split('-')
+                    for index in range(len(periods)):
+                        time_string = time.strptime(periods[index], "%H:%M")
+                        periods[index] = time.strftime("%H:%M:%S", time_string)
+                    # for index in range(len(periods)):
+                    #     period_list = periods[index].split(":")
+                    #     for l in range(len(period_list)):
+                    #         if len(period_list[l]) < 2:
+                    #             period_list[l] = "0" + period_list[l]
+                    #     if len(period_list) < 3:
+                    #         period_list.append("00")
+                    #     periods[index] = ":".join(period_list)
+                    insert_query = insert_query + ", '" + periods[0] + "', '" + periods[1] + "'"
+                insert_query += ");"
+                # print(insert_query)
+                try:
+                    cursor.execute(insert_query)
+                    mydb.commit()
+                except mysql.connector.Error as error:
+                    print(error)
+                    mydb.rollback()
+                    cursor.close()
+                    mydb.close()
+                    return
+
+def populatePhotos(path):
+    db = connectDB()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM photo;")
+    db.commit()
+    out_path = './photo_data.sql'
+    with open(out_path, 'w') as f:
+        f.write("BEGIN;\n")
+        f.close()
+    total = 50
+    count  = 0
+    insert_query = "INSERT INTO photo VALUES "
+    with open(path) as f:
+        for line in f:
+            print("%d / %d"%(count, total), end='\r')
+            data = json.loads(line)
+            photo_id = data["photo_id"]
+            business_id = data["business_id"]
+            caption = data["caption"]
+            if caption is None:
+                caption = ""
+            else:
+                caption = caption.replace("\"", "'").replace('"',"'").strip("'")
+            label = data["label"]
+            if label is None:
+                label = ""
+            else:
+                label = label.replace("\"", "'").replace('"',"'").strip("'")
+
+            if count == 0:
+                insert_query += "(\"%s\", \"%s\", \"%s\", \"%s\")"%(photo_id, business_id, caption, label)
+            else:
+                insert_query += ", (\"%s\", \"%s\", \"%s\", \"%s\")"%(photo_id, business_id, caption, label)
+            count += 1
+            if count > total:
+                with open(out_path, 'a') as fd:
+                    insert_query += ";"
+                    fd.write(insert_query)
+                    fd.write('\n')
+                    count = 0
+                    insert_query = "INSERT INTO photo VALUES ";
+                    fd.close()
+
+
+    with open(out_path, 'a') as fd:
+        if len(insert_query) > 25:
+            insert_query += ";"
+            fd.write(insert_query)
+            fd.write('\n')
+        fd.write('COMMIT;\n')
+        fd.close()
+>>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
 
 
 
@@ -394,11 +593,18 @@ def checkBusiness(business_file_path, db):
 
             i+=1
 
+
 if __name__ == "__main__":
     user_file_path = "../yelp_dataset/user.json"
+<<<<<<< HEAD
     photo_file_path = "yelp_dataset/photo.json"
     tip_file_path = "../yelp_dataset/tip.json"
     review_file_path = "../yelp_dataset/review.json"
+=======
+    photo_file_path = "../yelp_dataset/photo.json"
+    tip_file_path = "yelp_dataset/tip.json"
+    review_file_path = "yelp_dataset/review.json"
+>>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
     checkin_file_path = "yelp_dataset/checkin.json"
     business_file_path = "../yelp_dataset/business.json"
     attributes_out_path = "./attributes.json"
@@ -407,8 +613,16 @@ if __name__ == "__main__":
     # checkAttributes(business_file_path, out_path)
     # checkCategories(business_file_path, category_out_path)
     # createAttributesTables(category_out_path)
+<<<<<<< HEAD
     # # populateAttributes(business_file_
     populateTip(tip_file_path)
+=======
+    # populateAttributes(business_file_path)
+    # populateHours(business_file_path)
+    # populateCategories(business_file_path)
+    # populateElite(user_file_path)
+    populatePhotos(photo_file_path)
+>>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
     # populateUser(user_file_path)
     # db = connectDB()
     # checkBusiness(business_file_path, db)
