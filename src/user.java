@@ -199,9 +199,24 @@ public class user extends dbConnection{
 
         String group_id = generateUniqueId();
 
-        sql = "INSERT INTO group_info (group_id,name) VALUES ("++")"
+        sql = "INSERT INTO group_info (group_id,name) VALUES (\'"+group_id+"\',\'"+groupname+"\');";
+        sql2 = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_id+"\');";
 
-
+        try {
+            conn.setAutoCommit(false);
+            Boolean status = insertSQL(sql, conn);
+            Boolean status2 = insertSQL(sql2, conn);
+            if (!status || !status2) {
+                throw new SQLException("Please try again");
+            }
+            conn.commit();
+            System.out.println("create group successfully");
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
 
     }
 
