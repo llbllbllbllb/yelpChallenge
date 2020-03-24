@@ -229,6 +229,70 @@ public class user extends dbConnection{
                 conn.setAutoCommit(true);
             }
         }
+    }
+
+    public void createGroup(String groupname, ArrayList<String> friends, Connection conn) {
+        if(groupname == null || groupname.length() == 0) {
+            System.out.println("Error: Empty group name.");
+            return;
+        }
+
+        String group_id = generateUniqueId();
+
+        String sql = "INSERT INTO group_info (group_id,name) VALUES (\'"+group_id+"\',\'"+groupname+"\');";
+        String sql2 = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_id+"\');";
+
+        try {
+            conn.setAutoCommit(false);
+            Boolean status = insertSQL(sql, conn);
+            Boolean status2 = insertSQL(sql2, conn);
+            if (!status || !status2) {
+                throw new SQLException("Can not create group, Please try again");
+            }
+            conn.commit();
+            System.out.println("create group successfully");
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+
+
+        try{
+            conn.setAutoCommit(false);
+            Boolean status = true;
+            for(int i=0; i<friends.length(); i++){
+                String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+friends[i]+"\');";
+                Boolean status = insertSQL(sql, conn) && status;
+            }
+            if(!status) {
+                throw new SQLException("Can not add friends, Please try again");
+            }
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+
+    }
+
+    public void joinGroup(String group_id, Connection conn) {
+        String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_name+"\');";
+
+        try {
+            Boolean status = insertSQL(sql, conn);
+            if (!status) {
+                throw new SQLException("Can not join group, Please try again");
+            }
+            conn.commit();
+            System.out.println("Joined group successfully");
+
+        } catch (SQLException e){
+            conn.rollback();
+            e.printStackTrace();
+        }
 
     }
 
