@@ -1,12 +1,11 @@
 import mysql.connector
 import json
 import ast
-<<<<<<< HEAD
 import os
 
-=======
+
 import time
->>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
+
 
 def connectDB():
     mydb = mysql.connector.connect(
@@ -322,7 +321,7 @@ def populateFriends(path):
         cursor.close()
         mydb.close()
 
-<<<<<<< HEAD
+
 
 def populateReview(review_file_path):
     if os.path.exists("generateReview.sql"):
@@ -407,9 +406,6 @@ def populateTip(tip_file_path):
 
             # process postDate
 
-
-
-=======
 def populateCategories(path):
     mydb = connectDB()
     cursor = mydb.cursor()
@@ -558,7 +554,7 @@ def populatePhotos(path):
             fd.write('\n')
         fd.write('COMMIT;\n')
         fd.close()
->>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
+
 
 
 
@@ -596,35 +592,14 @@ def checkBusiness(business_file_path, db):
 
 if __name__ == "__main__":
     user_file_path = "../yelp_dataset/user.json"
-<<<<<<< HEAD
+
     photo_file_path = "yelp_dataset/photo.json"
     tip_file_path = "../yelp_dataset/tip.json"
     review_file_path = "../yelp_dataset/review.json"
-=======
-    photo_file_path = "../yelp_dataset/photo.json"
-    tip_file_path = "yelp_dataset/tip.json"
-    review_file_path = "yelp_dataset/review.json"
->>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
+
     checkin_file_path = "yelp_dataset/checkin.json"
     business_file_path = "../yelp_dataset/business.json"
     attributes_out_path = "./attributes.json"
     category_out_path = "./categories.json"
-    # populateUser(user_file_path)
-    # checkAttributes(business_file_path, out_path)
-    # checkCategories(business_file_path, category_out_path)
-    # createAttributesTables(category_out_path)
-<<<<<<< HEAD
-    # # populateAttributes(business_file_
-    populateTip(tip_file_path)
-=======
-    # populateAttributes(business_file_path)
-    # populateHours(business_file_path)
-    # populateCategories(business_file_path)
-    # populateElite(user_file_path)
-    populatePhotos(photo_file_path)
->>>>>>> 752813c72d3b9e3c0a87089533e0aabd894277f4
-    # populateUser(user_file_path)
-    # db = connectDB()
-    # checkBusiness(business_file_path, db)
-    # populateReview(user_file_path)
+
     print("finish")
