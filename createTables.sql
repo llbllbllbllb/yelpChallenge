@@ -325,6 +325,22 @@ CREATE TABLE friend (
 );
 
 -- ----------------------------
+--  Table structure for `friendRequest`
+-- ----------------------------
+DROP TABLE IF EXISTS friendRequest;
+-- SHOW WARNINGS;
+CREATE TABLE friendRequest (
+  user_id CHAR(22) NOT NULL,
+  friend_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id, friend_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(friend_id) REFERENCES user(user_id)
+
+);
+
+
+-- ----------------------------
 --  Table structure for `eliteYear`
 -- ----------------------------
 DROP TABLE IF EXISTS eliteYear;
