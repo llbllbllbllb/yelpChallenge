@@ -426,3 +426,19 @@ CREATE TABLE photo (
 
 
 );
+
+
+-- ----------------------------
+--  Table structure for `user_group`
+-- ----------------------------
+DROP TABLE IF EXISTS user_group;
+-- SHOW WARNINGS;
+CREATE TABLE user_group (
+  group_id CHAR(22) NOT NULL,
+  user_id CHAR(22) NOT NULL,
+
+
+  PRIMARY KEY(group_id,user_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+
+);
