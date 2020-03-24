@@ -388,21 +388,60 @@ def populateReview(review_file_path):
 
 
 def populateTip(tip_file_path):
-    mydb = connectDB()
-    cursor = mydb.cursor()
-    cursor.execute("DELETE FROM tip;")
+    if os.path.exists("generateTip.sql"):
+        os.remove("generateTip.sql")
 
-    with open(review_file_path) as f:
+    gff =  open("generateTip.sql", "a")
+    gff.write("DELETE FROM tip;\n")
+    gff.write("BEGIN;\n")
+
+    count = 0
+    set_batch_size = 100
+    batch_size = set_batch_size
+
+    with open(tip_file_path) as f:
         count = 0
+
+        query = "\n INSERT INTO tip (business_id,user_id, tipText,postDate,postTime,compliment_count) VALUES "
         for line in f:
-            print(" %d / total_size"%(count), end='\r')
+            print(" %d / 1223094"%(count), end='\r')
+            if batch_size == set_batch_size:
+                gff.write(query)
             data = json.loads(line)
+
 
             business_id = data["business_id"]
             user_id = data["user_id"]
             tipText = data["text"]
-            postDate = data["date"]
-            compliment_count = ["compliment_count"]
+            date_time = data["date"]
+            compliment_count = data["compliment_count"]
+
+            postDate,postTime = date_time.split()
+
+            tipText = tipText.replace('"',"")
+            tipText = tipText.replace(';',"")
+            tipText = tipText.replace('\\', '/ ')
+
+            value = "(\'" + str(business_id) + "\',\'" + str(user_id) + "\',\"" + str(tipText) + "\",\'" + str(postDate) + "\',\'" + str(postTime) + "\',\'" + str(compliment_count) + "\')"
+
+            batch_size-=1;
+            if batch_size == 0 or count == 1223093:
+                value += ";"
+                batch_size = set_batch_size
+            else:
+                value += ","
+
+            gff.write(value)
+            count += 1
+
+
+    gff.write(";")
+    gff.write("\nCOMMIT;")
+    gff.close()
+
+
+
+
 
             # process postDate
 
@@ -411,19 +450,15 @@ def populateCategories(path):
     cursor = mydb.cursor()
     cursor.execute("DELETE FROM CATEGORIES;")
     mydb.commit()
-    total = 0
-    count = 0
-    with open(path) as f:
-        for line in f:
-            total += 1
 
+    count = 0
     with open(path) as f:
         for line in f:
             data = json.loads(line)
             id = data['business_id'].strip()
             categories = data['categories']
 
-            print(" %d / %d"%(count, total), end='\r')
+            print(" %d / 192609"%(count), end='\r')
             count += 1
 
             if categories is not None and len(categories) != 0:
@@ -589,6 +624,48 @@ def checkBusiness(business_file_path, db):
 
             i+=1
 
+def populateCheckin(path):
+    if os.path.exists("generateCheckin.sql"):
+        os.remove("generateCheckin.sql")
+
+    gff =  open("generateCheckin.sql", "a")
+    gff.write("DELETE FROM checkin;\n")
+    gff.write("BEGIN;\n")
+    total = 0
+    count = 0
+    set_batch_size = 500
+    batch_size = set_batch_size
+    with open(path) as f:
+        query = "\n INSERT INTO checkin (business_id,checkinDate,checkinTime) VALUES "
+        for line in f:
+
+            print("%d / %d"%(count, 161950), end='\r')
+            data = json.loads(line)
+            business_id = data["business_id"]
+            date = data["date"]
+
+            date_time_list = date.split(', ')
+
+            for date_time in date_time_list:
+                if batch_size == set_batch_size:
+                    gff.write(query)
+                date,time = date_time.split()
+                value = "('" + str(business_id) + "','" + str(date) + "','" + str(time) + "')"
+                batch_size-=1;
+                if batch_size == 0 or date_time == date_time_list[-1]:
+                    value += ";"
+                    batch_size = set_batch_size
+                else:
+                    value += ","
+
+                gff.write(value)
+            count += 1
+
+    gff.write(";")
+    gff.write("\nCOMMIT;")
+    gff.close()
+
+
 
 if __name__ == "__main__":
     user_file_path = "../yelp_dataset/user.json"
@@ -597,9 +674,12 @@ if __name__ == "__main__":
     tip_file_path = "../yelp_dataset/tip.json"
     review_file_path = "../yelp_dataset/review.json"
 
-    checkin_file_path = "yelp_dataset/checkin.json"
+    checkin_file_path = "../yelp_dataset/checkin.json"
     business_file_path = "../yelp_dataset/business.json"
     attributes_out_path = "./attributes.json"
-    category_out_path = "./categories.json"
+    category_out_path = "../yelp_dataset/categories.json"
+
+
+    populateCheckin(checkin_file_path)
 
     print("finish")

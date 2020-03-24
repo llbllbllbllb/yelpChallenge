@@ -125,7 +125,26 @@ public class user extends dbConnection{
             }
         }
     }
-//    fan table???
+
+    public void complimentTip(String tip_id, Connection connection) throws SQLException {
+        String query = "UPDATE tip SET compliment_count = compliment_count + 1 where tip_id = \'" + tip_id + "\';";
+        try {
+            conn.setAutoCommit(false);
+            Boolean status = insertSQL(query, conn);
+            if (!status) {
+                throw new SQLException("Please try again");
+            }
+            conn.commit();
+            System.out.println("upvote tip successfully");
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    //    fan table???
     public void followUser(String user_id, Connection conn) {
         String sql = "UPDATE user SET fans = " +
                 "IF (fans is null, 1, fans + 1) WHERE user_id = \"" + user_id + "\";";
@@ -171,6 +190,22 @@ public class user extends dbConnection{
             }
         }
     }
+
+    public void createGroup(String groupname, Connection conn) {
+        if(groupname == null || groupname.length() == 0) {
+            System.out.println("Error: Empty group name.");
+            return;
+        }
+
+        String group_id = generateUniqueId();
+
+        sql = "INSERT INTO group_info (group_id,name) VALUES ("++")"
+
+
+
+    }
+
+
 
 
 //

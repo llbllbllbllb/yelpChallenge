@@ -396,8 +396,9 @@ DROP TABLE IF EXISTS checkin;
 CREATE TABLE checkin (
   business_id CHAR(22) NOT NULL,
   checkinDate DATE NOT NULL,
+  checkinTime TIME NOT NULL,
 
-  PRIMARY KEY(business_id,checkinDate),
+  PRIMARY KEY(business_id,checkinDate,checkinTime),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
 
 );
@@ -408,14 +409,16 @@ CREATE TABLE checkin (
 DROP TABLE IF EXISTS tip;
 -- SHOW WARNINGS;
 CREATE TABLE tip (
+  tip_id INT NOT NULL AUTO_INCREMENT,
   business_id CHAR(22) NOT NULL,
   user_id CHAR(22) NOT NULL,
 
-  tipText VARCHAR(200) NOT NULL,
+  tipText TEXT NOT NULL,
   postDate DATE NOT NULL,
+  postTime TIME NOT NULL,
   compliment_count INT DEFAULT 0 NOT NULL,
 
-  PRIMARY KEY(business_id, user_id),
+  PRIMARY KEY(tip_id),
   FOREIGN KEY(business_id) REFERENCES business(business_id),
   FOREIGN KEY(user_id) REFERENCES user(user_id)
 
@@ -431,11 +434,37 @@ CREATE TABLE photo (
   photo_id CHAR(22) NOT NULL,
   business_id CHAR(22) NOT NULL,
 
-  caption VARCHAR(25),
+  caption TEXT,
   label VARCHAR(10),
 
   PRIMARY KEY(photo_id),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
 
 
+);
+
+-- ----------------------------
+--  Table structure for `group_info`
+-- ----------------------------
+DROP TABLE IF EXISTS group_info;
+-- SHOW WARNINGS;
+CREATE TABLE group_info (
+  group_id CHAR(22) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+
+  PRIMARY KEY(group_id)
+);
+
+-- ----------------------------
+--  Table structure for `user_group`
+-- ----------------------------
+DROP TABLE IF EXISTS user_group;
+-- SHOW WARNINGS;
+CREATE TABLE user_group (
+  group_id CHAR(22) NOT NULL,
+  user_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(group_id,user_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+  FOREIGN KEY(group_id) REFERENCES group_info(group_id)
 );
