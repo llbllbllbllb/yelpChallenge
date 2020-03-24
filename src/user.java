@@ -78,15 +78,63 @@ public class user extends dbConnection{
         }
     }
 
-    public void confirmAddFriend(String friend_id, Connection conn) {
-        String sql = "INSERT INTO friend (user_id, friend_id) " +
-                "VALUES (" + "\"" + this.user_id + "\", \"" + friend_id + "\");";
-        System.out.println(sql);
-        Boolean status = insertSQL(sql, conn);
+    public void addFriendRequest(String friendRequest_id, Connection conn) {
+//        String test_user_id = "0T8Nted2-45Q47vX7S7=2X";
+//        String test_friend_id = "94rYTkXsdqESRHnBf1UldA";
+        String query = "INSERT INTO friendRequest " +
+                "(user_id, friend_id) VALUES (\"" + this.user_id + "\", \"" + friendRequest_id + "\");";
+//        String query = "INSERT INTO friendRequest " +
+//                "(user_id, friend_id) VALUES (\"" + test_user_id + "\", \"" + test_friend_id + "\");";
+        System.out.println(query);
+        Boolean status = insertSQL(query, conn);
         if (status == true) {
-            System.out.println("Added friend successfully!");
+            System.out.println("Friend request sent");
         } else {
             System.out.println("Please try again");
+        }
+    }
+
+    public void rejectFriendRequest(String friendRequest_id, Connection conn) {
+//        String test_user_id = "0T8Nted2-45Q47vX7S7=2X";
+//        String test_friend_id = "94rYTkXsdqESRHnBf1UldA";
+        String query = "DELETE FROM friendRequest WHERE user_id = \"" + friendRequest_id + "\";";
+//        String query = "DELETE FROM friendRequest WHERE user_id = \"" + test_user_id + "\";";
+        System.out.println(query);
+        Boolean status = insertSQL(query, conn);
+        if (status == true) {
+            System.out.println("Friend request rejected");
+        } else {
+            System.out.println("Please try again");
+        }
+    }
+
+    public void acceptFriendRequest(String friend_id, Connection conn) throws SQLException {
+//        String test_user_id = "0T8Nted2-45Q47vX7S7=2X";
+//        String test_friend_id = "94rYTkXsdqESRHnBf1UldA";
+        String query1 = "INSERT INTO friend " +
+                "VALUES (" + "\"" + this.user_id + "\", \"" + friend_id + "\"), " +
+                "(\"" + friend_id +  "\", \"" + this.user_id + "\");";
+        String query2 = "DELETE FROM friendRequest WHERE user_id = \"" + friend_id + "\";";
+//        String query1 = "INSERT INTO friend " +
+//                "VALUES (" + "\"" + test_user_id + "\", \"" + test_friend_id + "\"), " +
+//                "(\"" + test_friend_id +  "\", \"" + test_user_id + "\");";
+//        String query2 = "DELETE FROM friendRequest WHERE user_id = \"" + test_user_id + "\";";
+        System.out.println(query1);
+        System.out.println(query2);
+        try {
+            conn.setAutoCommit(false);
+            Boolean status1 = insertSQL(query1, conn);
+            Boolean status2 = insertSQL(query2, conn);
+            if (!status1 || ! status2) {
+                throw new SQLException("Please try again");
+            }
+            conn.commit();
+            System.out.println("Accept friend request successfully");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            conn.rollback();
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 
@@ -125,26 +173,7 @@ public class user extends dbConnection{
             }
         }
     }
-
-    public void complimentTip(String tip_id, Connection connection) throws SQLException {
-        String query = "UPDATE tip SET compliment_count = compliment_count + 1 where tip_id = \'" + tip_id + "\';";
-        try {
-            conn.setAutoCommit(false);
-            Boolean status = insertSQL(query, conn);
-            if (!status) {
-                throw new SQLException("Please try again");
-            }
-            conn.commit();
-            System.out.println("upvote tip successfully");
-        } catch (SQLException e) {
-            conn.rollback();
-            e.printStackTrace();
-        } finally {
-            conn.setAutoCommit(true);
-        }
-    }
-
-    //    fan table???
+//    fan table???
     public void followUser(String user_id, Connection conn) {
         String sql = "UPDATE user SET fans = " +
                 "IF (fans is null, 1, fans + 1) WHERE user_id = \"" + user_id + "\";";
@@ -171,41 +200,37 @@ public class user extends dbConnection{
 
 //    not sure about compliment ???
 //    hot:0, more:1, profile:2, cute:3, list:4, note:5, plain:6, cool:7, funny:8, writer:9, photos:10
-    public void complimentUser(int i, Connection conn) {
-        String user = "0T8Nted2-45Q47vX7S7=2X";
+    public void complimentTip(String tip_id, int i, Connection conn) throws SQLException {
         String compliment = null;
         String[] compliments = {"compliment_hot", "compliment_more", "compliment_profile", "compliment_cute", "compliment_list", "compliment_note", "compliment_plain", "compliment_cool", "compliment_funny",         "compliment_writer", "compliment_photos"};
         if (i >= 0 && i <= 10 ) {
             compliment = compliments[i];
         }
         if (compliment != null) {
-            String query = "UPDATE user SET " + compliment + " = " +
-                    "IF (" + compliment + " is null, 1, " + compliment + " + 1) WHERE user_id = \"" + user + "\";";
+            String query = "UPDATE tip SET compliment_count = compliment_count + 1 where tip_id = \'" + tip_id + "\';";
+            String query2 = "UPDATE user SET " + compliment + " = " +
+                    "IF (" + compliment + " is null, 1, " + compliment + " + 1) WHERE " +
+                    "user_id = (SELECT user_id FROM tip WHERE tip_id = \"" + tip_id + "\");";
             System.out.println(query);
-            Boolean status = insertSQL(query, conn);
-            if (status == true) {
-                System.out.println("successfully");
-            } else {
-                System.out.println("Please try again");
+            System.out.println(query2);
+            try {
+                conn.setAutoCommit(false);
+                Boolean status1 = insertSQL(query, conn);
+                Boolean status2 = insertSQL(query2, conn);
+                if (!status1 || !status2) {
+                    throw new SQLException("Please try again");
+                }
+                conn.commit();
+                System.out.println("compliment tip successfully");
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true);
             }
         }
-    }
-
-    public void createGroup(String groupname, Connection conn) {
-        if(groupname == null || groupname.length() == 0) {
-            System.out.println("Error: Empty group name.");
-            return;
-        }
-
-        String group_id = generateUniqueId();
-
-        sql = "INSERT INTO group_info (group_id,name) VALUES ("++")"
-
-
 
     }
-
-
 
 
 //
