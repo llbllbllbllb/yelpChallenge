@@ -191,6 +191,20 @@ public class user extends dbConnection{
         }
     }
 
+    public void createGroup(String groupname, Connection conn) {
+        if(groupname == null || groupname.length() == 0) {
+            System.out.println("Error: Empty group name.");
+            return;
+        }
+
+        String group_id = generateUniqueId();
+
+        sql = "INSERT INTO group_info (group_id,name) VALUES ("++")"
+
+
+
+    }
+
 
 
 
