@@ -380,8 +380,9 @@ DROP TABLE IF EXISTS checkin;
 CREATE TABLE checkin (
   business_id CHAR(22) NOT NULL,
   checkinDate DATE NOT NULL,
+  checkinTime TIME NOT NULL,
 
-  PRIMARY KEY(business_id,checkinDate),
+  PRIMARY KEY(business_id,checkinDate,checkinTime),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
 
 );
@@ -392,14 +393,16 @@ CREATE TABLE checkin (
 DROP TABLE IF EXISTS tip;
 -- SHOW WARNINGS;
 CREATE TABLE tip (
+  tip_id INT NOT NULL AUTO_INCREMENT,
   business_id CHAR(22) NOT NULL,
   user_id CHAR(22) NOT NULL,
 
-  tipText VARCHAR(200) NOT NULL,
+  tipText TEXT NOT NULL,
   postDate DATE NOT NULL,
+  postTime TIME NOT NULL,
   compliment_count INT DEFAULT 0 NOT NULL,
 
-  PRIMARY KEY(business_id, user_id),
+  PRIMARY KEY(tip_id),
   FOREIGN KEY(business_id) REFERENCES business(business_id),
   FOREIGN KEY(user_id) REFERENCES user(user_id)
 
@@ -415,7 +418,7 @@ CREATE TABLE photo (
   photo_id CHAR(22) NOT NULL,
   business_id CHAR(22) NOT NULL,
 
-  caption VARCHAR(25),
+  caption TEXT,
   label VARCHAR(10),
 
   PRIMARY KEY(photo_id),
