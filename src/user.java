@@ -239,7 +239,7 @@ public class user extends dbConnection{
     }
 
     public void joinGroup(String group_id, Connection conn) {
-        String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_name+"\');";
+        String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_id+"\');";
 
         try {
             Boolean status = insertSQL(sql, conn);
@@ -254,6 +254,23 @@ public class user extends dbConnection{
             e.printStackTrace();
         }
 
+    }
+
+    public void followBusiness(String business_id, Connection conn) {
+        String sql = "INSERT INTO user_follow_business (user_id,business_id) VALUES (\'"+this.user_id+"\',\'"+business_id+"\');";
+
+        try {
+            Boolean status = insertSQL(sql, conn);
+            if (!status) {
+                throw new SQLException("Can not follow restaurant, Please try again");
+            }
+            conn.commit();
+            System.out.println("Follow restaurant successfully");
+
+        } catch (SQLException e){
+            conn.rollback();
+            e.printStackTrace();
+        }
     }
 
 

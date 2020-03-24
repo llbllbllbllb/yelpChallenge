@@ -452,3 +452,18 @@ CREATE TABLE user_group (
   FOREIGN KEY(user_id) REFERENCES user(user_id)
   FOREIGN KEY(group_id) REFERENCES group_info(group_id)
 );
+
+
+-- ----------------------------
+--  Table structure for `user_follow_business`
+-- ----------------------------
+DROP TABLE IF EXISTS user_follow_business;
+-- SHOW WARNINGS;
+CREATE TABLE user_follow_business (
+  user_id CHAR(22) NOT NULL,
+  business_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id,business_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+);
