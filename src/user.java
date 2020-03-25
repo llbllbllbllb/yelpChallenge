@@ -315,6 +315,7 @@ public class user extends dbConnection{
         }
     }
 
+
     public void writeReview(String business_id, int stars, String review_text, Connection conn) throws SQLException{
         String review_id = generateUniqueId();
 
@@ -347,8 +348,44 @@ public class user extends dbConnection{
             e.printStackTrace();
         }
 
+    }
+
+    public void writeTip(String business_id, String tipText, Connection conn) throws SQLException{
+        String tip_id = generateUniqueId();
+
+        //get current date and time
+        LocalDateTime curTime = LocalDateTime.now();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String postDate = curTime.format(dateFormat);
+        String postTime = curTime.format(timeFormat);
+
+        // replace some text to avoid insert failure
+        tipText = review_text.replace('"',"");
+        tipText = review_text.replace('\\',"/");
+        tipText = reviewText.replace(';'," ");
+
+        String sql = "INSERT INTO tip (tip_id, user_id, business_id, postDate, postTime, tipText) VALUES "
+                + "(\'" + tip_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + postDate + "\',\'" + postTime + "\',\"" + tipText + "\");";
+
+        try {
+            Boolean status = insertSQL(sql, conn);
+            if (!status) {
+                throw new SQLException("Can not write tip, Please try again");
+            }
+            conn.commit();
+            System.out.println("Tip written successfully");
+
+        } catch (SQLException e){
+            conn.rollback();
+            e.printStackTrace();
+        }
+
+
+
 
     }
+
 
 
 //
