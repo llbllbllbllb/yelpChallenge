@@ -214,9 +214,9 @@ public class user extends dbConnection{
         String time = tmp_split[1];
 
         // replace some text to avoid insert failure
-        reviewText = reviewText.replace('"',"");
-        reviewText = reviewText.replace('\\',"/");
-        reviewText = reviewText.replace(';'," ");
+        reviewText = reviewText.replaceAll("\"","");
+        reviewText = reviewText.replaceAll("\\\\","/");
+        reviewText = reviewText.replaceAll(";", " ");
         
         String query1 = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) " +
                 "VALUES (\"" + review_id + "\", \"" + user_id + "\", \"" + business_id + "\", " +
@@ -371,9 +371,9 @@ public class user extends dbConnection{
         String reviewTime = curTime.format(timeFormat);
 
         // replace some text to avoid insert failure
-        review_text = review_text.replace('"',"");
-        review_text = review_text.replace('\\',"/");
-        review_Text = review_Text.replace(';'," ");
+        review_text = review_text.replaceAll("\"","");
+        review_text = review_text.replaceAll("\\\\","/");
+        review_text = review_text.replaceAll(";", " ");
 
         String sql = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) VALUES "
                 + "(\'" + review_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + stars + "\',\'" + reviewDate + "\',\'" + reviewTime + "\',\"" + review_text + "\");";
@@ -405,9 +405,10 @@ public class user extends dbConnection{
         String postTime = curTime.format(timeFormat);
 
         // replace some text to avoid insert failure
-        tipText = review_text.replace('"',"");
-        tipText = review_text.replace('\\',"/");
-        tipText = reviewText.replace(';'," ");
+        tipText = tipText.replaceAll("\"","");
+        tipText = tipText.replaceAll("\\\\","/");
+        tipText = tipText.replaceAll(";", " ");
+
 
         String sql = "INSERT INTO tip (tip_id, user_id, business_id, postDate, postTime, tipText) VALUES "
                 + "(\'" + tip_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + postDate + "\',\'" + postTime + "\',\"" + tipText + "\");";
