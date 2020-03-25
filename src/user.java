@@ -212,6 +212,12 @@ public class user extends dbConnection{
         String[] tmp_split = tmp.split(" ");
         String date =  tmp_split[0];
         String time = tmp_split[1];
+
+        // replace some text to avoid insert failure
+        reviewText = reviewText.replace('"',"");
+        reviewText = reviewText.replace('\\',"/");
+        reviewText = reviewText.replace(';'," ");
+        
         String query1 = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) " +
                 "VALUES (\"" + review_id + "\", \"" + user_id + "\", \"" + business_id + "\", " +
                 stars + ", \"" + date + "\", \"" + time + "\", \"" + reviewText + "\");";
@@ -225,7 +231,7 @@ public class user extends dbConnection{
                 throw new SQLException("Please try again");
             }
             conn.commit();
-            System.out.println("compliment tip successfully");
+            System.out.println("reply successfully");
         } catch (SQLException e) {
             conn.rollback();
             e.printStackTrace();
@@ -359,7 +365,7 @@ public class user extends dbConnection{
 
         //get current date and time
         LocalDateTime curTime = LocalDateTime.now();
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
         String reviewDate = curTime.format(dateFormat);
         String reviewTime = curTime.format(timeFormat);
@@ -367,7 +373,7 @@ public class user extends dbConnection{
         // replace some text to avoid insert failure
         review_text = review_text.replace('"',"");
         review_text = review_text.replace('\\',"/");
-        reviewText = reviewText.replace(';'," ");
+        review_Text = review_Text.replace(';'," ");
 
         String sql = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) VALUES "
                 + "(\'" + review_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + stars + "\',\'" + reviewDate + "\',\'" + reviewTime + "\',\"" + review_text + "\");";
