@@ -4,6 +4,8 @@ import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalDateTime; // Import the LocalDateTime class
+import java.time.format.DateTimeFormatter; // Import the DateTimeFormatter class
 import java.util.Random;
 
 public class user extends dbConnection{
@@ -265,7 +267,8 @@ public class user extends dbConnection{
         }
     }
 
-    public void createGroup(String groupname, ArrayList<String> friends, Connection conn) throws SQLException {
+
+    public void createGroup(String groupname, ArrayList<String> friends, Connection conn) throws SQLException{
         if(groupname == null || groupname.length() == 0) {
             System.out.println("Error: Empty group name.");
             return;
@@ -312,7 +315,9 @@ public class user extends dbConnection{
 
     }
 
-    public void joinGroup(String group_id, Connection conn) throws SQLException {
+
+    public void joinGroup(String group_id, Connection conn) throws SQLException{
+
         String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_id+"\');";
 
         try {
@@ -331,6 +336,7 @@ public class user extends dbConnection{
     }
 
     public void followBusiness(String business_id, Connection conn) throws SQLException {
+
         String sql = "INSERT INTO user_follow_business (user_id,business_id) VALUES (\'"+this.user_id+"\',\'"+business_id+"\');";
 
         try {
@@ -346,6 +352,78 @@ public class user extends dbConnection{
             e.printStackTrace();
         }
     }
+
+
+    public void writeReview(String business_id, int stars, String review_text, Connection conn) throws SQLException{
+        String review_id = generateUniqueId();
+
+        //get current date and time
+        LocalDateTime curTime = LocalDateTime.now();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String reviewDate = curTime.format(dateFormat);
+        String reviewTime = curTime.format(timeFormat);
+
+        // replace some text to avoid insert failure
+        review_text = review_text.replace('"',"");
+        review_text = review_text.replace('\\',"/");
+        reviewText = reviewText.replace(';'," ");
+
+        String sql = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) VALUES "
+                + "(\'" + review_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + stars + "\',\'" + reviewDate + "\',\'" + reviewTime + "\',\"" + review_text + "\");";
+
+
+        try {
+            Boolean status = insertSQL(sql, conn);
+            if (!status) {
+                throw new SQLException("Can not write review, Please try again");
+            }
+            conn.commit();
+            System.out.println("Review written successfully");
+
+        } catch (SQLException e){
+            conn.rollback();
+            e.printStackTrace();
+        }
+
+    }
+
+    public void writeTip(String business_id, String tipText, Connection conn) throws SQLException{
+        String tip_id = generateUniqueId();
+
+        //get current date and time
+        LocalDateTime curTime = LocalDateTime.now();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String postDate = curTime.format(dateFormat);
+        String postTime = curTime.format(timeFormat);
+
+        // replace some text to avoid insert failure
+        tipText = review_text.replace('"',"");
+        tipText = review_text.replace('\\',"/");
+        tipText = reviewText.replace(';'," ");
+
+        String sql = "INSERT INTO tip (tip_id, user_id, business_id, postDate, postTime, tipText) VALUES "
+                + "(\'" + tip_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + postDate + "\',\'" + postTime + "\',\"" + tipText + "\");";
+
+        try {
+            Boolean status = insertSQL(sql, conn);
+            if (!status) {
+                throw new SQLException("Can not write tip, Please try again");
+            }
+            conn.commit();
+            System.out.println("Tip written successfully");
+
+        } catch (SQLException e){
+            conn.rollback();
+            e.printStackTrace();
+        }
+
+
+
+
+    }
+
 
 
 //
