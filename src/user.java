@@ -383,6 +383,105 @@ public class user extends dbConnection{
 
 
 
+    }
+
+    public ArrayList<review> refreshReview(Connection conn) throws SQLException{
+
+        //user should be able to refresh new followBusiness(Restaurant new reviews) / friend written reviews
+
+        // get refresh time. table: user_last_refresh
+        String get_refresh_time_sql = "SELECT refresh_time, refresh_date from user_last_refresh where user_id = \'" + this.user_id + "\';";
+
+        rs = executeSQL(get_refresh_time_sql,conn);
+
+        String oldRefreshtime = "";
+        String oldRefreshdate = "";
+        while(rs.next()){
+            oldRefreshtime = rs.getString("refresh_time");
+            oldRefreshdate = rs.getString("refresh_date");
+        }
+
+
+        //get current date and time
+        LocalDateTime curTime = LocalDateTime.now();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String newRefreshDate = curTime.format(dateFormat);
+        String newRefreshTime = curTime.format(timeFormat);
+
+        // if time date not exist, load all
+        if(oldRefreshtime == "" || oldRefreshdate == ""){
+            oldRefreshtime = "00:00:00";
+            oldRefreshdate = "1900-01-01";
+        }
+
+        SELECT * from
+        (SELECT * from
+        (SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
+        user_id in (SELECT friend_id from friend where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
+        UNION
+        SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
+        business_id in (SELECT business_id from user_follow_business where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
+        ORDER BY reviewDate,reviewTime) A
+        natural join
+        (SELECT user_id,name as username from user) B) C
+        natural join
+        (SELECT business_id,name as businessname from business) D
+        ;
+
+
+
+        String get_review_sql =
+                "SELECT * from\n" +
+                "(SELECT * from\n" +
+                "(SELECT * from review where\n" +
+                "user_id in (SELECT friend_id from friend where user_id = \'" + this.user_id + "\') AND reviewDate > CAST(\'" + oldRefreshdate+ "\' as DATE) AND reviewTime > CAST(\'" + oldRefreshtime + "\' as TIME)\n" +
+                "UNION\n" +
+                "SELECT * from review where\n" +
+                "business_id in (SELECT business_id from user_follow_business where user_id = \'" + this.user_id + "\') AND reviewDate > CAST(\'" + oldRefreshdate + "\' as DATE) AND reviewTime > CAST(\'" + oldRefreshtime + "\' as TIME)\n" +
+                "ORDER BY reviewDate,reviewTime) A\n"+
+                "natural join\n" +
+                "(SELECT user_id,name as username from user) B) C\n" +
+                "natural join\n" +
+                "(SELECT business_id,name as businessname from business) D;";
+
+        ResultSet rs = executeSQL(get_review_sql,conn);
+
+
+        String review_id = "";
+        String business_id = "";
+        String user_id = "";
+        String username = "";
+        String businessname = "";
+        int stars = 0;
+        String reviewDate = "";
+        String reviewTime = "";
+        String reviewText = "";
+        int useful = 0;
+        int funny = 0;
+        int cool = 0;
+
+        ArrayList<review> review_list = new ArrayList<review>();
+        while(rs.next()){
+            review_id = rs.getString("review_id");
+            business_id = rs.getString("business_id");
+            user_id = rs.getString("user_id");
+            username = rs.getString("username");
+            businessname = rs.getString("businessname");
+            stars = rs.getInt("stars");
+            reviewDate = rs.getString("reviewDate");
+            reviewTime = rs.getString("reviewTime");
+            reviewText = rs.getString("reviewText");
+            useful = rs.getInt("useful");
+            funny = rs.getInt("funny");
+            cool = rs.getInt("cool");
+
+            review tmp = new review(review_id,business_id,user_id,username,businessname,stars,reviewDate,reviewTime,reviewText,useful,funny,cool);
+            review_list.add(tmp);
+
+        }
+
+        return review_list;
 
     }
 
