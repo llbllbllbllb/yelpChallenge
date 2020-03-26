@@ -385,6 +385,19 @@ CREATE TABLE review (
 );
 
 
+-- ----------------------------
+--  Table structure for `review`
+-- ----------------------------
+DROP TABLE IF EXISTS reviewRelation;
+-- SHOW WARNINGS;
+CREATE TABLE reviewRelation (
+  review_id CHAR(22) NOT NULL,
+  response_to_review_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(review_id, response_to_review_id),
+  FOREIGN KEY(review_id) REFERENCES review(review_id),
+  FOREIGN KEY(response_to_review_id) REFERENCES review(review_id)
+);
 
 
 

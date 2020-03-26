@@ -1,5 +1,7 @@
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalDateTime; // Import the LocalDateTime class
@@ -200,7 +202,45 @@ public class user extends dbConnection{
         }
     }
 
-//    not sure about compliment ???
+    public void replyReview(String business_id, int stars,
+                            String reviewText, String response_to_review_id, Connection conn) throws SQLException {
+        String review_id = generateUniqueId();
+        String user_id = this.user_id;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        String tmp = dtf.format(now);
+        String[] tmp_split = tmp.split(" ");
+        String date =  tmp_split[0];
+        String time = tmp_split[1];
+
+        // replace some text to avoid insert failure
+        reviewText = reviewText.replaceAll("\"","");
+        reviewText = reviewText.replaceAll("\\\\","/");
+        reviewText = reviewText.replaceAll(";", " ");
+        
+        String query1 = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) " +
+                "VALUES (\"" + review_id + "\", \"" + user_id + "\", \"" + business_id + "\", " +
+                stars + ", \"" + date + "\", \"" + time + "\", \"" + reviewText + "\");";
+        String query2 = "INSERT INTO reviewRelation VALUES (\"" + review_id + "\", \"" + response_to_review_id + "\");";
+
+        try {
+            conn.setAutoCommit(false);
+            Boolean status1 = insertSQL(query1, conn);
+            Boolean status2 = insertSQL(query2, conn);
+            if (!status1 || !status2) {
+                throw new SQLException("Please try again");
+            }
+            conn.commit();
+            System.out.println("reply successfully");
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+
+    }
+
 //    hot:0, more:1, profile:2, cute:3, list:4, note:5, plain:6, cool:7, funny:8, writer:9, photos:10
     public void complimentTip(String tip_id, int i, Connection conn) throws SQLException {
         String compliment = null;
@@ -233,6 +273,7 @@ public class user extends dbConnection{
         }
     }
 
+
     public void createGroup(String groupname, ArrayList<String> friends, Connection conn) throws SQLException{
         if(groupname == null || groupname.length() == 0) {
             System.out.println("Error: Empty group name.");
@@ -263,14 +304,14 @@ public class user extends dbConnection{
 
         try{
             conn.setAutoCommit(false);
-            Boolean status = true;
-            for(int i=0; i<friends.length(); i++){
-                String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+friends[i]+"\');";
-                Boolean status = insertSQL(sql, conn) && status;
+            for(int i=0; i< friends.size(); i++){
+                String query = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+friends.get(i)+"\');";
+                Boolean status3 = insertSQL(query, conn);
+                if(!status3) {
+                    throw new SQLException("Can not add friends, Please try again");
+                }
             }
-            if(!status) {
-                throw new SQLException("Can not add friends, Please try again");
-            }
+
         } catch (SQLException e) {
             conn.rollback();
             e.printStackTrace();
@@ -280,7 +321,9 @@ public class user extends dbConnection{
 
     }
 
+
     public void joinGroup(String group_id, Connection conn) throws SQLException{
+
         String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'"+group_id+"\',\'"+this.user_id+"\');";
 
         try {
@@ -298,7 +341,8 @@ public class user extends dbConnection{
 
     }
 
-    public void followBusiness(String business_id, Connection conn) throws SQLException{
+    public void followBusiness(String business_id, Connection conn) throws SQLException {
+
         String sql = "INSERT INTO user_follow_business (user_id,business_id) VALUES (\'"+this.user_id+"\',\'"+business_id+"\');";
 
         try {
@@ -321,15 +365,15 @@ public class user extends dbConnection{
 
         //get current date and time
         LocalDateTime curTime = LocalDateTime.now();
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
         String reviewDate = curTime.format(dateFormat);
         String reviewTime = curTime.format(timeFormat);
 
         // replace some text to avoid insert failure
-        review_text = review_text.replace('"',"");
-        review_text = review_text.replace('\\',"/");
-        reviewText = reviewText.replace(';'," ");
+        review_text = review_text.replaceAll("\"","");
+        review_text = review_text.replaceAll("\\\\","/");
+        review_text = review_text.replaceAll(";", " ");
 
         String sql = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) VALUES "
                 + "(\'" + review_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + stars + "\',\'" + reviewDate + "\',\'" + reviewTime + "\',\"" + review_text + "\");";
@@ -361,9 +405,10 @@ public class user extends dbConnection{
         String postTime = curTime.format(timeFormat);
 
         // replace some text to avoid insert failure
-        tipText = review_text.replace('"',"");
-        tipText = review_text.replace('\\',"/");
-        tipText = reviewText.replace(';'," ");
+        tipText = tipText.replaceAll("\"","");
+        tipText = tipText.replaceAll("\\\\","/");
+        tipText = tipText.replaceAll(";", " ");
+
 
         String sql = "INSERT INTO tip (tip_id, user_id, business_id, postDate, postTime, tipText) VALUES "
                 + "(\'" + tip_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + postDate + "\',\'" + postTime + "\',\"" + tipText + "\");";
