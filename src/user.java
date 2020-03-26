@@ -460,19 +460,19 @@ public class user extends dbConnection{
             oldRefreshdate = "1900-01-01";
         }
 
-        SELECT * from
-        (SELECT * from
-        (SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
-        user_id in (SELECT friend_id from friend where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
-        UNION
-        SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
-        business_id in (SELECT business_id from user_follow_business where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
-        ORDER BY reviewDate,reviewTime) A
-        natural join
-        (SELECT user_id,name as username from user) B) C
-        natural join
-        (SELECT business_id,name as businessname from business) D
-        ;
+//        SELECT * from
+//        (SELECT * from
+//        (SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
+//        user_id in (SELECT friend_id from friend where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
+//        UNION
+//        SELECT review_id,user_id,business_id,reviewDate,reviewTime from review where
+//        business_id in (SELECT business_id from user_follow_business where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg') AND reviewDate > CAST('2013-05-09' as DATE) AND reviewTime > CAST('16:23:58' as TIME)
+//        ORDER BY reviewDate,reviewTime) A
+//        natural join
+//        (SELECT user_id,name as username from user) B) C
+//        natural join
+//        (SELECT business_id,name as businessname from business) D
+//        ;
 
 
 
