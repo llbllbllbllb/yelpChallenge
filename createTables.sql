@@ -496,3 +496,18 @@ CREATE TABLE user_follow_business (
   FOREIGN KEY(user_id) REFERENCES user(user_id),
   FOREIGN KEY(business_id) REFERENCES business(business_id)
 );
+
+
+-- ----------------------------
+--  Table structure for `user_last_refresh`
+-- ----------------------------
+DROP TABLE IF EXISTS user_last_refresh;
+-- SHOW WARNINGS;
+CREATE TABLE user_last_refresh (
+  user_id CHAR(22) NOT NULL,
+  refresh_time TIME NOT NULL,
+  refresh_date DATE NOT NULL,
+
+  PRIMARY KEY(user_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+);
