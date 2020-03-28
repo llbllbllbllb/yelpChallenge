@@ -1,8 +1,8 @@
-**ECE656 Project Report: A Simple Social Network (with Yelp Dataset)**
+# **ECE656 Project Report: A Simple Social Network (with Yelp Dataset)**
 
-Libang Liang
+Student Name: Libang Liang, Student ID: 20662701
 
-Zhiming Lin
+Student Name: Zhiming Lin, Student ID:
 
 
 
@@ -18,7 +18,7 @@ We first used Python Script to generate SQL batched insert statement to insert l
 
 **Implementation** 
 
-Take review as an example:
+Take populating review as an example:
 
 ```python
 def populateReview(review_file_path):
@@ -83,38 +83,184 @@ We first create an empty sql file. Then we read the JSON file in batches. In the
 
 
 
-#### 4. Client
+#### 4. Client(README)
 
 We created set of APIs using Java with Spring Boot Framwork. User can do the following functions:
 
 1. Register
+   User should be able to register a new user account by providing a user name, a unique user id is created and returned to the user.
 
 2. Login
+   User should be able to login ther account by providing their user id.
 
 3. Refresh new reviews if they followed any business(restaurant) or friends
+   User should be able to look at their unseen reviews based on the 1. business(restaurant) they followed, 2. freinds they have.
 
 4. Make friend request
 
+   User should be able to make friend request if they can provide friend's user id.
+   
+
 5. Accept/Reject friend request
+   User should be able to accept or reject any pending friend request.
 
 6. Vote(useful, funny, cool) review
+   User should be able to vote reviews if they can provide the review id and the type of vote.
 
 7. Follow User
+   User should be able to follow user.
 
 8. Choose Elite User
+   User could be chosen to be elite user for specific year.
 
 9. Reply Review
+   User should be able to reply a review if they can provide the original review id.
+
+   
 
 10. Upvote a Tip
+    User should be able to upvote a tip if they can provide tip id.
 
 11. Create a Group
+    User should be able to create a group if they can provide list of user id(s).
 
 12. Join an existing group
+    User should be able to join an existing group if they can provide a group id.
 
 13. Follow a Business(Restaurant)
+    User should be able to follow a business(restaurant) if they can provide the business id.
 
 14. Write a Review on a Business(Restaurant)
+    User should be able to post(write an review) on topic(business/restaurant).
 
 15. Write a Tip on a Business(Restaurant)
+    User should be able to write a tip on topic(business/restaurant).
 
-    
+
+
+**Testing**
+
+Testing can be done by starting the server, and copy and paste the following urls to the browser.
+
+By checking the return objects values, once could determine the result of the execution.
+
+
+
+**Register**
+
+```
+
+```
+
+
+
+**Login**
+
+```
+
+```
+
+
+
+**Refresh new reviews**
+
+```
+
+```
+
+
+
+**Make friend request**
+
+```
+
+```
+
+
+
+**Accept/Reject friend request**
+
+```
+
+```
+
+
+
+**Vote(useful, funny, cool) review**
+
+```
+
+```
+
+
+
+**Follow User**
+
+```
+
+```
+
+
+
+**Choose Elite User**
+
+```
+
+```
+
+
+
+**Reply Review**
+
+```
+
+```
+
+
+
+**Upvote a Tip**
+
+```
+
+```
+
+
+
+**Create a Group**
+
+```
+
+```
+
+
+
+**Join an existing group**
+
+```
+
+```
+
+
+
+**Follow a Business(Restaurant)**
+
+```
+
+```
+
+
+
+**Write a Review on a Business(Restaurant)**
+
+```
+
+```
+
+
+
+**Write a Tip on a Business(Restaurant)**
+
+```
+
+```
+
