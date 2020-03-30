@@ -192,11 +192,11 @@ mysql> select * from user_last_refresh;
 
 Result:
 
-![refresh_result](/Users/ivanleung/Desktop/ECE656/yelpChallenge/refresh_result.png)
+![refresh_result](refresh_result.png)
 
 Refresh again the returned result will be empty list(Since all read):
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/refresh_again.png" alt="refresh_again" style="zoom:50%;" />
+<img src="refresh_again.png" alt="refresh_again" style="zoom:50%;" />
 
 **Make friend request**
 
@@ -390,7 +390,7 @@ http://localhost:8080/reply/review/businessId=5z1WIr7E9P2CSzyN5seeSA&&stars=5&&t
 
 ```
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/replydone.png" alt="replydone" style="zoom:50%;" />
+<img src="replydone.png" alt="replydone" style="zoom:50%;" />
 
 New review is generated:
 
@@ -449,7 +449,7 @@ mysql> select tip_id,compliment_count from tip where tip_id =1;
 1 row in set (0.00 sec)
 ```
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/upvoteTip.png" alt="upvoteTip" style="zoom:50%;" />
+<img src="upvoteTip.png" alt="upvoteTip" style="zoom:50%;" />
 
 After:
 
@@ -534,7 +534,7 @@ mysql> select * from user_follow_business;
 Empty set (0.00 sec)
 ```
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/followBusiness.png" alt="followBusiness" style="zoom:50%;" />
+<img src="followBusiness.png" alt="followBusiness" style="zoom:50%;" />
 
 After:
 
@@ -556,7 +556,7 @@ mysql> select * from user_follow_business;
 http://localhost:8080/write/review/businessId=__1uG7MLxWGFIv2fCGPiQQ&&stars=5&&text="very good food"
 ```
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/writeReivew.png" alt="writeReivew" style="zoom:50%;" />
+<img src="writeReivew.png" alt="writeReivew" style="zoom:50%;" />
 
 Before:
 
@@ -603,7 +603,7 @@ mysql> select * from review where review_id = 'FkNuOEzRdcPSKU3p-o@9M+';
 http://localhost:8080/write/tip/businessId=__1uG7MLxWGFIv2fCGPiQQ&&text="must try the hidden menu!"
 ```
 
-<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/writeTip.png" alt="writeTip" style="zoom:50%;" />
+<img src="writeTip.png" alt="writeTip" style="zoom:50%;" />
 
 Before:
 
