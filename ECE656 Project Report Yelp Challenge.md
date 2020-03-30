@@ -100,7 +100,6 @@ We created set of APIs using Java with Spring Boot Framwork. User can do the fol
 
    User should be able to make friend request if they can provide friend's user id.
    
-
 5. Accept/Reject friend request
    User should be able to accept or reject any pending friend request.
 
@@ -149,63 +148,234 @@ By checking the return objects values, once could determine the result of the ex
 **Register**
 
 ```
-
+curl -X POST "localhost:8080/register/test1";
 ```
+
+Register successfully. Your userID is f7@N@@3QViWEpZL1Jtrla6
 
 
 
 **Login**
 
 ```
-
+curl -X GET "localhost:8080/login/___DPmKJsBF2X6ZKgAeGqg";
 ```
+
+Login Successfully. Your UserID is: ___DPmKJsBF2X6ZKgAeGqg
 
 
 
 **Refresh new reviews**
 
 ```
-
+curl -X GET "localhost:8080/refresh/userId=QBDLNWKgldFPAfj8Z8F9Xg";
 ```
 
+Before:
 
+```mysql
+mysql> select * from user_last_refresh;
+Empty set (0.00 sec)
+```
+
+After:
+
+```mysql
+mysql> select * from user_last_refresh;
++------------------------+--------------+--------------+
+| user_id                | refresh_time | refresh_date |
++------------------------+--------------+--------------+
+| QBDLNWKgldFPAfj8Z8F9Xg | 14:15:23     | 2020-03-29   |
++------------------------+--------------+--------------+
+1 row in set (0.00 sec)
+```
+
+Result:
+
+![refresh_result](/Users/ivanleung/Desktop/ECE656/yelpChallenge/refresh_result.png)
+
+Refresh again the returned result will be empty list(Since all read):
+
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/refresh_again.png" alt="refresh_again" style="zoom:50%;" />
 
 **Make friend request**
 
 ```
+curl -X GET "localhost:8080/addFriendRequest/__-Kt26YrtJxGdWs8FqKCg";
+```
+
+Friend request sent. 
+
+```mysql
+mysql> select * from friendrequest;
++------------------------+------------------------+
+| user_id                | friend_id              |
++------------------------+------------------------+
+| ___DPmKJsBF2X6ZKgAeGqg | __-Kt26YrtJxGdWs8FqKCg |
++------------------------+------------------------+
+1 row in set (0.00 sec)
 
 ```
 
 
 
-**Accept/Reject friend request**
+**Reject friend request**
 
 ```
+curl -X GET "localhost:8080/rejectFriendRequest/___DPmKJsBF2X6ZKgAeGqg";
+```
 
+Friend request rejected
+
+```mysql
+mysql> select * from friendrequest;
+Empty set (0.00 sec)
+```
+
+
+
+**Accept friend request**
+
+```
+curl -X GET "localhost:8080/acceptFriendRequest/___DPmKJsBF2X6ZKgAeGqg";
+```
+
+Accept friend request successfully.
+
+```mysql
+mysql> select * from friend where user_id = '__-Kt26YrtJxGdWs8FqKCg' and friend_id = '___DPmKJsBF2X6ZKgAeGqg';
++------------------------+------------------------+
+| user_id                | friend_id              |
++------------------------+------------------------+
+| __-Kt26YrtJxGdWs8FqKCg | ___DPmKJsBF2X6ZKgAeGqg |
++------------------------+------------------------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+mysql> select * from friendrequest;
+Empty set (0.00 sec)
 ```
 
 
 
 **Vote(useful, funny, cool) review**
 
+Before:
+
+```mysql
+mysql> select user_id, funny from user where user_id = "___DPmKJsBF2X6ZKgAeGqg";
 ```
 
+```
++------------------------+-------+
+| user_id                | funny |
++------------------------+-------+
+| ___DPmKJsBF2X6ZKgAeGqg |     5 |
++------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+mysql> select review_id, funny from review where review_id = "___-Bw8LtQgezPiN9xJWaQ";
++------------------------+-------+
+| review_id              | funny |
++------------------------+-------+
+| ___-Bw8LtQgezPiN9xJWaQ |     1 |
++------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+
+
+```
+// type => 0: useful, 1: funny, 2: cool
+curl -X GET "localhost:8080/vote/review_id=___-Bw8LtQgezPiN9xJWaQ&&type=1";
+```
+
+vote successfully. 
+
+```mysql
+mysql> select user_id, funny from user where user_id = "___DPmKJsBF2X6ZKgAeGqg";
++------------------------+-------+
+| user_id                | funny |
++------------------------+-------+
+| ___DPmKJsBF2X6ZKgAeGqg |     6 |
++------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+mysql> select review_id, funny from review where review_id = "___-Bw8LtQgezPiN9xJWaQ";
++------------------------+-------+
+| review_id              | funny |
++------------------------+-------+
+| ___-Bw8LtQgezPiN9xJWaQ |     2 |
++------------------------+-------+
+1 row in set (0.00 sec)
 ```
 
 
 
 **Follow User**
 
+Before
+
+```mysql
+mysql> select fans from user where user_id = "__-Kt26YrtJxGdWs8FqKCg";
++------+
+| fans |
++------+
+|    3 |
++------+
+1 row in set (0.00 sec)
 ```
 
+```
+curl -i -X GET "localhost:8080/follow/user/__-Kt26YrtJxGdWs8FqKCg";
+```
+
+follow successfully. 
+
+After:
+
+```mysql
+mysql> select fans from user where user_id = "__-Kt26YrtJxGdWs8FqKCg";
++------+
+| fans |
++------+
+|    4 |
++------+
+1 row in set (0.00 sec)
 ```
 
 
 
 **Choose Elite User**
 
+Before:
+
+```mysql
+mysql> select * from eliteYear where user_id = "__-Kt26YrtJxGdWs8FqKCg";
+Empty set (0.00 sec)
 ```
 
+```
+curl -i -X GET "localhost:8080/eliteuser/__-Kt26YrtJxGdWs8FqKCg";
+```
+
+Elect user as elite user this year successfully. 
+
+After:
+
+```mysql
+mysql> select * from eliteYear where user_id = "__-Kt26YrtJxGdWs8FqKCg";
++------------------------+-----------+
+| user_id                | eliteYear |
++------------------------+-----------+
+| __-Kt26YrtJxGdWs8FqKCg |      2020 |
++------------------------+-----------+
+1 row in set (0.00 sec)
 ```
 
 
@@ -213,7 +383,39 @@ By checking the return objects values, once could determine the result of the ex
 **Reply Review**
 
 ```
+//Login First
+http://localhost:8080/login/QBDLNWKgldFPAfj8Z8F9Xg
+//Reply to specific review given review_id
+http://localhost:8080/reply/review/businessId=5z1WIr7E9P2CSzyN5seeSA&&stars=5&&text=awesome&&responseTo=Y3pR0ZXAtxoROZ2NBE_CGQ
 
+```
+
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/replydone.png" alt="replydone" style="zoom:50%;" />
+
+New review is generated:
+
+```mysql
+mysql> select review_id,reviewText from review where review_id = "3iL+xGMHxze^Ju+8D64gUJ";
++------------------------+------------+
+| review_id              | reviewText |
++------------------------+------------+
+| 3iL+xGMHxze^Ju+8D64gUJ | awesome    |
++------------------------+------------+
+1 row in set (0.00 sec)
+
+```
+
+Relationship between reviews are also stored:
+
+```mysql
+mysql> select * from reviewRelation;
++------------------------+------------------------+
+| review_id              | response_to_review_id  |
++------------------------+------------------------+
+| 3iL+xGMHxze^Ju+8D64gUJ | Y3pR0ZXAtxoROZ2NBE_CGQ |
+| Zz-HU-5DUJXfBv6zZA-9!K | Y3pR0ZXAtxoROZ2NBE_CGQ |
++------------------------+------------------------+
+2 rows in set (0.00 sec)
 ```
 
 
@@ -221,7 +423,52 @@ By checking the return objects values, once could determine the result of the ex
 **Upvote a Tip**
 
 ```
+//hot:0, more:1, profile:2, cute:3, list:4, note:5, plain:6, cool:7, funny:8, writer:9, 
+//photos:10
 
+http://localhost:8080/compliment/tip/tipID=1&&compliment=3
+```
+
+Before:
+
+```mysql
+mysql> select user_id,compliment_cute from user where user_id =  'UPw5DWs_b-e2JRBS-t37Ag';
++------------------------+-----------------+
+| user_id                | compliment_cute |
++------------------------+-----------------+
+| UPw5DWs_b-e2JRBS-t37Ag |               0 |
++------------------------+-----------------+
+1 row in set (0.00 sec)
+
+mysql> select tip_id,compliment_count from tip where tip_id =1;
++--------+------------------+
+| tip_id | compliment_count |
++--------+------------------+
+|      1 |                0 |
++--------+------------------+
+1 row in set (0.00 sec)
+```
+
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/upvoteTip.png" alt="upvoteTip" style="zoom:50%;" />
+
+After:
+
+```mysql
+mysql> select user_id,compliment_cute from user where user_id =  'UPw5DWs_b-e2JRBS-t37Ag';
++------------------------+-----------------+
+| user_id                | compliment_cute |
++------------------------+-----------------+
+| UPw5DWs_b-e2JRBS-t37Ag |               1 |
++------------------------+-----------------+
+1 row in set (0.00 sec)
+
+mysql> select tip_id,compliment_count from tip where tip_id =1;
++--------+------------------+
+| tip_id | compliment_count |
++--------+------------------+
+|      1 |                1 |
++--------+------------------+
+1 row in set (0.00 sec)
 ```
 
 
@@ -229,7 +476,39 @@ By checking the return objects values, once could determine the result of the ex
 **Create a Group**
 
 ```
+curl -i -X POST -H "Content-type: application/json" -d '{"groupName": "abc", "friends": ["___DPmKJsBF2X6ZKgAeGqg", "___fEWlObjtPaZ-pK0eq9g"]}' localhost:8080/creategroup;
+```
 
+```
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 28
+Date: Sun, 29 Mar 2020 19:16:40 GMT
+
+create group successfully. 
+```
+
+Result:
+
+```mysql
+mysql> select * from group_info;
++------------------------+------+
+| group_id               | name |
++------------------------+------+
+| dbeZLQH8^PKCpu0X4c+RXt | abc  |
++------------------------+------+
+1 row in set (0.00 sec)
+```
+
+```mysql
+mysql> select * from user_group;
++------------------------+------------------------+
+| group_id               | user_id                |
++------------------------+------------------------+
+| dbeZLQH8^PKCpu0X4c+RXt | ___DPmKJsBF2X6ZKgAeGqg |
+| dbeZLQH8^PKCpu0X4c+RXt | ___fEWlObjtPaZ-pK0eq9g |
+| dbeZLQH8^PKCpu0X4c+RXt | QBDLNWKgldFPAfj8Z8F9Xg |
++------------------------+------------------------+
+3 rows in set (0.00 sec)
 ```
 
 
@@ -245,7 +524,28 @@ By checking the return objects values, once could determine the result of the ex
 **Follow a Business(Restaurant)**
 
 ```
+http://localhost:8080/follow/restaurant/businessId='__1uG7MLxWGFIv2fCGPiQQ'
+```
 
+Before:
+
+```mysql
+mysql> select * from user_follow_business;
+Empty set (0.00 sec)
+```
+
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/followBusiness.png" alt="followBusiness" style="zoom:50%;" />
+
+After:
+
+```mysql
+mysql> select * from user_follow_business;
++------------------------+------------------------+
+| user_id                | business_id            |
++------------------------+------------------------+
+| QBDLNWKgldFPAfj8Z8F9Xg | __1uG7MLxWGFIv2fCGPiQQ |
++------------------------+------------------------+
+1 row in set (0.00 sec)
 ```
 
 
@@ -253,7 +553,46 @@ By checking the return objects values, once could determine the result of the ex
 **Write a Review on a Business(Restaurant)**
 
 ```
+http://localhost:8080/write/review/businessId=__1uG7MLxWGFIv2fCGPiQQ&&stars=5&&text="very good food"
+```
 
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/writeReivew.png" alt="writeReivew" style="zoom:50%;" />
+
+Before:
+
+```mysql
+mysql> select review_id from review where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg';
++------------------------+
+| review_id              |
++------------------------+
+| 3iL+xGMHxze^Ju+8D64gUJ |
+| cQ-mvJZ9zneSYn7m0b2FAA |
+| Zz-HU-5DUJXfBv6zZA-9!K |
++------------------------+
+3 rows in set (0.00 sec)
+```
+
+After:
+
+```mysql
+mysql> select review_id from review where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg';
++------------------------+
+| review_id              |
++------------------------+
+| 3iL+xGMHxze^Ju+8D64gUJ |
+| cQ-mvJZ9zneSYn7m0b2FAA |
+| FkNuOEzRdcPSKU3p-o@9M+ |
+| Zz-HU-5DUJXfBv6zZA-9!K |
++------------------------+
+4 rows in set (0.00 sec)
+
+mysql> select * from review where review_id = 'FkNuOEzRdcPSKU3p-o@9M+';
++------------------------+------------------------+------------------------+-------+------------+------------+----------------+--------+-------+------+
+| review_id              | user_id                | business_id            | stars | reviewDate | reviewTime | reviewText     | useful | funny | cool |
++------------------------+------------------------+------------------------+-------+------------+------------+----------------+--------+-------+------+
+| FkNuOEzRdcPSKU3p-o@9M+ | QBDLNWKgldFPAfj8Z8F9Xg | __1uG7MLxWGFIv2fCGPiQQ |     5 | 2020-03-30 | 12:33:46   | very good food |      0 |     0 |    0 |
++------------------------+------------------------+------------------------+-------+------------+------------+----------------+--------+-------+------+
+1 row in set (0.00 sec)
 ```
 
 
@@ -261,6 +600,28 @@ By checking the return objects values, once could determine the result of the ex
 **Write a Tip on a Business(Restaurant)**
 
 ```
+http://localhost:8080/write/tip/businessId=__1uG7MLxWGFIv2fCGPiQQ&&text="must try the hidden menu!"
+```
 
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/writeTip.png" alt="writeTip" style="zoom:50%;" />
+
+Before:
+
+```mysql
+mysql> select * from tip where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg';
+Empty set (0.01 sec)
+
+```
+
+After:
+
+```mysql
+mysql> select * from tip where user_id = 'QBDLNWKgldFPAfj8Z8F9Xg';
++---------+------------------------+------------------------+---------------------------+------------+----------+------------------+
+| tip_id  | business_id            | user_id                | tipText                   | postDate   | postTime | compliment_count |
++---------+------------------------+------------------------+---------------------------+------------+----------+------------------+
+| 1223095 | __1uG7MLxWGFIv2fCGPiQQ | QBDLNWKgldFPAfj8Z8F9Xg | must try the hidden menu! | 2020-03-30 | 12:41:55 |                0 |
++---------+------------------------+------------------------+---------------------------+------------+----------+------------------+
+1 row in set (0.00 sec)
 ```
 
