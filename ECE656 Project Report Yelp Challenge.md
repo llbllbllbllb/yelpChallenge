@@ -9,7 +9,6 @@ Student Name: Zhiming Lin, Student ID: 20835645
 In this project, we built a simple social network. First we created entity-relationship model for this network, then we translated our ER Model into relational database design. We populated Yelp Dataset using python generated sql files, and wrote list of APIs that allow client to initial a post on topics, follow other users, form groups, refresh posts, reply posts etc. using Java Spring Boot framework. Tests on different written APIs are also written.
 
 #### 1. ER Model
-
 <img src="ER Model.png" alt="ER Model" style="zoom:50%;" />
 
 
@@ -17,6 +16,9 @@ In this project, we built a simple social network. First we created entity-relat
 
 
 
+<img src="ER Model.png" alt="ER Model" style="zoom:50%;" />
+
+In the entity-relationship schema, we have 5 entities: User, Business, Review, Photo and Group. One user can have $0$ to $N$ friend(s), so there is a many-to-many relationships between users of Is-Friend relation. On the other hand, a user can be in $0$ to $N$ group(s) while a group must has at least 2 members. User can follow $0$ to $N$ Business while Business can be followed by $0$ to $N$ users,  so there is a many-to-many relationship for User-Follow-Business relation. The same situation applies to Tip relation: User can write $0$ to $N$ tips on a Business and Business can hold tips from many users. There is a ternary relationships between User, Review and Business, which means user can write review on a business. Also, review itself can be replied by another review, so there is a Reply-to relation. Finally, Business can has $0$ to $N$ photos while one photo must belong to one Business, so a Is-Photo-Of relationship is a one to many relation.
 
 
 
