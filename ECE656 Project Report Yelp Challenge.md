@@ -163,7 +163,9 @@ CREATE TABLE business (
 
 Because every business has different attributes. The attribute may be mulitvalues or single value. Hence, we create a table for single attribute and tables for multivalues attributes.
 
-Single attribute: attributes:
+
+
+##### Single attribute
 
 ```mysql
 DROP TABLE IF EXISTS attributes;
@@ -211,7 +213,9 @@ CREATE TABLE attributes (
 
 
 
-The "GoodForMeal" is multivalues attribute:
+##### Multivalues attribute
+
+GoodForMeal
 
 ```mysql
 DROP TABLE IF EXISTS attrGoodForMeal;
@@ -234,7 +238,7 @@ CREATE TABLE attrGoodForMeal (
 
 
 
-The attrBusinessParking:
+The attrBusinessParking
 
 ```mysql
 DROP TABLE IF EXISTS attrBusinessParking;
@@ -256,7 +260,329 @@ CREATE TABLE attrBusinessParking (
 
 
 
-The 
+attrAmbience
+
+```mysql
+DROP TABLE IF EXISTS attrAmbience;
+-- SHOW WARNINGS;
+CREATE TABLE attrAmbience (
+  business_id CHAR(22) NOT NULL,
+
+  romantic BOOLEAN DEFAULT NULL,
+  intimate BOOLEAN DEFAULT NULL,
+  classy BOOLEAN DEFAULT NULL,
+  hipster BOOLEAN DEFAULT NULL,
+  divey BOOLEAN DEFAULT NULL,
+  touristy BOOLEAN DEFAULT NULL,
+  trendy BOOLEAN DEFAULT NULL,
+  upscale BOOLEAN DEFAULT NULL,
+  casual BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+attrMusic
+
+```mysql
+DROP TABLE IF EXISTS attrMusic;
+-- SHOW WARNINGS;
+CREATE TABLE attrMusic (
+  business_id CHAR(22) NOT NULL,
+
+  dj BOOLEAN DEFAULT NULL,
+  background_music BOOLEAN DEFAULT NULL,
+  no_music BOOLEAN DEFAULT NULL,
+  jukebox BOOLEAN DEFAULT NULL,
+  live BOOLEAN DEFAULT NULL,
+  video BOOLEAN DEFAULT NULL,
+  karaoke BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+attrBestNights
+
+```mysql
+DROP TABLE IF EXISTS attrBestNights;
+-- SHOW WARNINGS;
+CREATE TABLE attrBestNights (
+  business_id CHAR(22) NOT NULL,
+
+  monday BOOLEAN DEFAULT NULL,
+  tuesday BOOLEAN DEFAULT NULL,
+  friday BOOLEAN DEFAULT NULL,
+  wednesday BOOLEAN DEFAULT NULL,
+  thursday BOOLEAN DEFAULT NULL,
+  sunday BOOLEAN DEFAULT NULL,
+  saturday BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+attrHairSpecializesIn
+
+```mysql
+DROP TABLE IF EXISTS attrHairSpecializesIn;
+-- SHOW WARNINGS;
+CREATE TABLE attrHairSpecializesIn (
+  business_id CHAR(22) NOT NULL,
+
+  straightperms BOOLEAN DEFAULT NULL,
+  coloring BOOLEAN DEFAULT NULL,
+  extensions BOOLEAN DEFAULT NULL,
+  africanamerican BOOLEAN DEFAULT NULL,
+  curly BOOLEAN DEFAULT NULL,
+  kids BOOLEAN DEFAULT NULL,
+  perms BOOLEAN DEFAULT NULL,
+  asian BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+attrDietaryRestrictions
+
+```mysql
+DROP TABLE IF EXISTS attrDietaryRestrictions;
+-- SHOW WARNINGS;
+CREATE TABLE attrDietaryRestrictions (
+  business_id CHAR(22) NOT NULL,
+
+  dairy_free BOOLEAN DEFAULT NULL,
+  gluten_free BOOLEAN DEFAULT NULL,
+  vegan BOOLEAN DEFAULT NULL,
+  kosher BOOLEAN DEFAULT NULL,
+  halal BOOLEAN DEFAULT NULL,
+  soy_free BOOLEAN DEFAULT NULL,
+  vegetarian BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+categories
+
+```mysql
+DROP TABLE IF EXISTS categories;
+-- SHOW WARNINGS;
+CREATE TABLE categories (
+  business_id CHAR(22) NOT NULL,
+  category VARCHAR(256) NOT NULL,
+
+  PRIMARY KEY(business_id,category),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+hours
+
+```mysql
+DROP TABLE IF EXISTS hours;
+-- SHOW WARNINGS;
+CREATE TABLE hours (
+  business_id CHAR(22) NOT NULL,
+
+  mondayStart TIME,
+  mondayEnd TIME,
+
+  tuesdayStart TIME,
+  tuesdayEnd TIME,
+
+  wednesdayStart TIME,
+  wednesdayEnd TIME,
+
+  thursdayStart TIME,
+  thursdayEnd TIME,
+
+  fridayStart TIME,
+  fridayEnd TIME,
+
+  saturdayStart TIME,
+  saturdayEnd TIME,
+
+  sundayStart TIME,
+  sundayEnd TIME,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+);
+```
+
+
+
+One business can have zero to many photos. One photo can only belong to one business.
+
+```mysql
+DROP TABLE IF EXISTS photo;
+-- SHOW WARNINGS;
+CREATE TABLE photo (
+  photo_id CHAR(22) NOT NULL,
+  business_id CHAR(22) NOT NULL,
+
+  caption TEXT,
+  label VARCHAR(10),
+
+  PRIMARY KEY(photo_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+
+);
+```
+
+
+
+One user can follow zero to many businesses. While, one business can be followed by zero to many users.
+
+```mysql
+DROP TABLE IF EXISTS user_follow_business;
+-- SHOW WARNINGS;
+CREATE TABLE user_follow_business (
+  user_id CHAR(22) NOT NULL,
+  business_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id,business_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+);
+```
+
+
+
+One business can be checked in multiple times.
+
+checkin
+
+```mysql
+DROP TABLE IF EXISTS checkin;
+-- SHOW WARNINGS;
+CREATE TABLE checkin (
+  business_id CHAR(22) NOT NULL,
+  checkinDate DATE NOT NULL,
+  checkinTime TIME NOT NULL,
+
+  PRIMARY KEY(business_id,checkinDate,checkinTime),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+One user can write zero to many tips for one business. one business can be written tips by zero to many users.
+
+ tip
+
+```mysql
+DROP TABLE IF EXISTS tip;
+-- SHOW WARNINGS;
+CREATE TABLE tip (
+  tip_id INT NOT NULL AUTO_INCREMENT,
+  business_id CHAR(22) NOT NULL,
+  user_id CHAR(22) NOT NULL,
+
+  tipText TEXT NOT NULL,
+  postDate DATE NOT NULL,
+  postTime TIME NOT NULL,
+  compliment_count INT DEFAULT 0 NOT NULL,
+
+  PRIMARY KEY(tip_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+
+);
+```
+
+
+
+One user can write zero to many reviews about one business. One review can rely to one reviews. one review can be replied by multiple reviews.
+
+```mysql
+DROP TABLE IF EXISTS review;
+-- SHOW WARNINGS;
+CREATE TABLE review (
+  review_id CHAR(22) NOT NULL,
+
+  user_id CHAR(22) NOT NULL,
+  business_id CHAR(22) NOT NULL,
+
+  stars INT NOT NULL,
+  reviewDate DATE,
+  reviewTime TIME,
+  reviewText TEXT,
+
+  useful INT DEFAULT 0,
+  funny INT DEFAULT 0,
+  cool INT DEFAULT 0,
+
+
+
+  PRIMARY KEY(review_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+
+);
+```
+
+reviewRelation:
+
+```mysql
+DROP TABLE IF EXISTS reviewRelation;
+-- SHOW WARNINGS;
+CREATE TABLE reviewRelation (
+  review_id CHAR(22) NOT NULL,
+  response_to_review_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(review_id, response_to_review_id),
+  FOREIGN KEY(review_id) REFERENCES review(review_id),
+  FOREIGN KEY(response_to_review_id) REFERENCES review(review_id)
+);
+```
+
+
+
+Also, user_last_refresh table is created to satisfy that user can determine what posts have been added by people and/or topics that they are following since they last read from those people/topics:
+
+user_last_refresh
+
+```mysql
+DROP TABLE IF EXISTS user_last_refresh;
+-- SHOW WARNINGS;
+CREATE TABLE user_last_refresh (
+  user_id CHAR(22) NOT NULL,
+  refresh_time TIME NOT NULL,
+  refresh_date DATE NOT NULL,
+
+  PRIMARY KEY(user_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+);
+```
 
 
 
