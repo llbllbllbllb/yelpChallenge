@@ -1318,7 +1318,7 @@ We created set of APIs using Java with Spring Boot Framwork. User can do the fol
 	User should be able to join an existing group if they can provide a group id.
 
 	```java
-	    @GetMapping("/join/group/groupID={group_id}")
+	    @GetMapping("/join/group/groupID='{group_id}'")
 	    public String joinGroup(@PathVariable String group_id) throws SQLException {
 	        if (user == null) {
 	            return "Please register firstly. \n";
@@ -1348,7 +1348,6 @@ We created set of APIs using Java with Spring Boot Framwork. User can do the fol
 	            code = 1;
 	
 	        } catch (SQLException e) {
-	            conn.rollback();
 	            e.printStackTrace();
 	            return code;
 	        }
@@ -1871,9 +1870,9 @@ curl -i -X POST -H "Content-type: application/json" -d '{"groupName": "abc", "fr
 ```
 Content-Type: text/plain;charset=UTF-8
 Content-Length: 28
-Date: Sun, 29 Mar 2020 19:16:40 GMT
+Date: Sat, 04 Apr 2020 20:23:58 GMT
 
-create group successfully. 
+create group successfully.
 ```
 
 Result:
@@ -1883,7 +1882,7 @@ mysql> select * from group_info;
 +------------------------+------+
 | group_id               | name |
 +------------------------+------+
-| dbeZLQH8^PKCpu0X4c+RXt | abc  |
+| Qyu0kYYcZ6sla0-HBcYV1z | abc  |
 +------------------------+------+
 1 row in set (0.00 sec)
 ```
@@ -1893,9 +1892,9 @@ mysql> select * from user_group;
 +------------------------+------------------------+
 | group_id               | user_id                |
 +------------------------+------------------------+
-| dbeZLQH8^PKCpu0X4c+RXt | ___DPmKJsBF2X6ZKgAeGqg |
-| dbeZLQH8^PKCpu0X4c+RXt | ___fEWlObjtPaZ-pK0eq9g |
-| dbeZLQH8^PKCpu0X4c+RXt | QBDLNWKgldFPAfj8Z8F9Xg |
+| Qyu0kYYcZ6sla0-HBcYV1z | ___DPmKJsBF2X6ZKgAeGqg |
+| Qyu0kYYcZ6sla0-HBcYV1z | ___fEWlObjtPaZ-pK0eq9g |
+| Qyu0kYYcZ6sla0-HBcYV1z | QBDLNWKgldFPAfj8Z8F9Xg |
 +------------------------+------------------------+
 3 rows in set (0.00 sec)
 ```
@@ -1905,7 +1904,37 @@ mysql> select * from user_group;
 **Join an existing group**
 
 ```
+http://localhost:8080/login/___QCazm0YrHLd3uNUPYMA
+http://localhost:8080/join/group/groupID='Qyu0kYYcZ6sla0-HBcYV1z'
+```
 
+Before:
+
+```mysql
+mysql> select * from user_group;
++------------------------+------------------------+
+| group_id               | user_id                |
++------------------------+------------------------+
+| Qyu0kYYcZ6sla0-HBcYV1z | ___DPmKJsBF2X6ZKgAeGqg |
+| Qyu0kYYcZ6sla0-HBcYV1z | ___fEWlObjtPaZ-pK0eq9g |
+| Qyu0kYYcZ6sla0-HBcYV1z | QBDLNWKgldFPAfj8Z8F9Xg |
++------------------------+------------------------+
+3 rows in set (0.00 sec)
+```
+
+After:
+
+```
+mysql> select * from user_group;
++------------------------+------------------------+
+| group_id               | user_id                |
++------------------------+------------------------+
+| Qyu0kYYcZ6sla0-HBcYV1z | ___DPmKJsBF2X6ZKgAeGqg |
+| Qyu0kYYcZ6sla0-HBcYV1z | ___fEWlObjtPaZ-pK0eq9g |
+| Qyu0kYYcZ6sla0-HBcYV1z | ___QCazm0YrHLd3uNUPYMA |
+| Qyu0kYYcZ6sla0-HBcYV1z | QBDLNWKgldFPAfj8Z8F9Xg |
++------------------------+------------------------+
+4 rows in set (0.00 sec)
 ```
 
 
