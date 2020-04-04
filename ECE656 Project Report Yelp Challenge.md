@@ -654,61 +654,875 @@ def populateReview(review_file_path):
 
 We first create an empty sql file. Then we read the JSON file in batches. In the review text object, we replaced the ambiguous characters to the mysql statements. we then write the SQL statements into the sql files. Finally We source this .sql file in the mysql session.
 
+Other scripts can be seen in populate.py.
+
 
 
 
 
 #### 4. Client(README)
 
+This part is done in Spring Boot, user can be type in corresponding address to call the APIs and complete functions they want.
+
 We created set of APIs using Java with Spring Boot Framwork. User can do the following functions:
 
 1. Register
    User should be able to register a new user account by providing a user name, a unique user id is created and returned to the user.
 
+   ```java
+       @PostMapping("/register/{name}")
+       public String register(@PathVariable String name) {
+           user = User.getInstance();
+           user.setUser_name(name);
+           int code = user.newUser(conn);
+           if (code == 1) {
+               return "Register successfully. Your userID is " + user.getUser_id() + "\n";
+           } else {
+               return null;
+           }
+       }
+   ```
+   
+   ```java
+       public int newUser(Connection conn) {
+           String user_id = generateUniqueId();
+           this.user_id = user_id;
+           LocalDate yelping_since = LocalDate.now();
+           String sql = "INSERT INTO user (user_id, name, yelping_since) " +
+                   "VALUES (" + "\"" + user_id + "\", \"" + this.user_name + "\" ,\"" + yelping_since + "\");";
+           System.out.println(sql);
+           boolean status = insertSQL(sql, conn);
+           if (status == true) {
+               System.out.println("Registration successfully!");
+               return 1;
+           } else {
+               System.out.println("Please try again");
+               return 0;
+           }
+       }
+   ```
+   
+   
+   
 2. Login
    User should be able to login ther account by providing their user id.
+
+   ```java
+       @GetMapping("/login/{user_id}")
+       public String login(@PathVariable String user_id) throws SQLException {
+           user = User.getInstance();
+           user.setUser_id(user_id);
+           user.setUser_name("");
+           int code = user.login(user_id,conn);
+           if(code == -1){
+               return "Invalid User ID, please try again.\n";
+           }
+           else if(code == 0){
+   
+               return "Login Successfully. Your UserID is: " + user_id+ "\n";
+           }
+           else {
+               return "Please Try Again.\n";
+           }
+   
+       }
+   ```
+
+   ```java
+       public int login(String user_id, Connection conn) throws SQLException {
+           String sql = "SELECT user_id from user where user_id = \'" +  user_id + "\';";
+           System.out.println(sql);
+   
+           ResultSet rs = executeSQL(sql, conn);
+           if(!(rs.isBeforeFirst() )) {
+   //            not exist
+               return -1;
+           }
+           else{
+               return 0;
+           }
+   
+       }
+   ```
+
+   
 
 3. Refresh new reviews if they followed any business(restaurant) or friends
    User should be able to look at their unseen reviews based on the 1. business(restaurant) they followed, 2. freinds they have.
 
+   ```java
+       @RequestMapping("/refresh/userId={user_id}")
+       public ArrayList<review> refresh(@PathVariable String user_id) throws SQLException {
+           if(user == null) {
+               return null;
+           } else{
+               ArrayList<review> content = user.refreshReview(user.getUser_id(),conn);
+               return content;
+           }
+       }
+   ```
+
+   ```java
+       public ArrayList<review> refreshReview(String user_id,Connection conn) throws SQLException {
+   
+           //user should be able to refresh new followBusiness(Restaurant new reviews) / friend written reviews
+   
+           // get refresh time. table: user_last_refresh
+           String get_refresh_time_sql = "SELECT refresh_time, refresh_date from user_last_refresh where user_id = \'" + user_id + "\';";
+   
+           ResultSet rs = executeSQL(get_refresh_time_sql, conn);
+   
+           String oldRefreshtime = "";
+           String oldRefreshdate = "";
+           while (rs.next()) {
+               oldRefreshtime = rs.getString("refresh_time");
+               oldRefreshdate = rs.getString("refresh_date");
+           }
+   
+   
+           //get current date and time
+           LocalDateTime curTime = LocalDateTime.now();
+           DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+           DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+           String newRefreshDate = curTime.format(dateFormat);
+           String newRefreshTime = curTime.format(timeFormat);
+   
+           // if time date not exist, load all
+           System.out.println("oldRefreshTime: " + oldRefreshtime);
+           System.out.println("oldRefreshdate: " + oldRefreshdate);
+           if (oldRefreshtime == "" || oldRefreshdate == "") {
+               oldRefreshtime = "00:00:00";
+               oldRefreshdate = "1900-01-01";
+           }
+   
+           String get_review_sql =
+                   "SELECT * from\n" +
+                           "(SELECT * from\n" +
+                           "(SELECT * from review where\n" +
+                           "user_id in (SELECT friend_id from friend where user_id = \'" + user_id + "\') AND reviewDate > CAST(\'" + oldRefreshdate + "\' as DATE) AND reviewTime > CAST(\'" + oldRefreshtime + "\' as TIME)\n" +
+                           "UNION\n" +
+                           "SELECT * from review where\n" +
+                           "business_id in (SELECT business_id from user_follow_business where user_id = \'" + user_id + "\') AND reviewDate > CAST(\'" + oldRefreshdate + "\' as DATE) AND reviewTime > CAST(\'" + oldRefreshtime + "\' as TIME)\n" +
+                           "ORDER BY reviewDate,reviewTime) A\n" +
+                           "natural join\n" +
+                           "(SELECT user_id,name as username from user) B) C\n" +
+                           "natural join\n" +
+                           "(SELECT business_id,name as businessname from business) D;";
+   
+           rs = executeSQL(get_review_sql, conn);
+   
+   
+           String review_id = "";
+           String business_id = "";
+           String friend_user_id = "";
+           String username = "";
+           String businessname = "";
+           int stars = 0;
+           String reviewDate = "";
+           String reviewTime = "";
+           String reviewText = "";
+           int useful = 0;
+           int funny = 0;
+           int cool = 0;
+   
+           ArrayList<review> review_list = new ArrayList<review>();
+           while (rs.next()) {
+               review_id = rs.getString("review_id");
+               business_id = rs.getString("business_id");
+               friend_user_id = rs.getString("user_id");
+               username = rs.getString("username");
+               businessname = rs.getString("businessname");
+               stars = rs.getInt("stars");
+               reviewDate = rs.getString("reviewDate");
+               reviewTime = rs.getString("reviewTime");
+               reviewText = rs.getString("reviewText");
+               useful = rs.getInt("useful");
+               funny = rs.getInt("funny");
+               cool = rs.getInt("cool");
+   
+               review tmp = new review(review_id, business_id, user_id, username, businessname, stars, reviewDate, reviewTime, reviewText, useful, funny, cool);
+               review_list.add(tmp);
+   
+           }
+           // if time date not exist
+           if (oldRefreshtime == "00:00:00" && oldRefreshdate == "1900-01-01") {
+               String update_refresh_time_sql = "INSERT INTO user_last_refresh (user_id, refresh_time, refresh_date) VALUES " +
+                       "(\'" + user_id + "\',\'" + newRefreshTime + "\',\'" + newRefreshDate + "\');";
+               System.out.println(update_refresh_time_sql);
+               insertSQL(update_refresh_time_sql, conn);
+           }
+           else{
+               String update_refresh_time_sql = "UPDATE user_last_refresh set refresh_time = \'" + newRefreshTime + "\', refresh_date = \'" + newRefreshDate + "\' where user_id = \'" + user_id + "\';";
+               System.out.println(update_refresh_time_sql);
+               insertSQL(update_refresh_time_sql, conn);
+           }
+   
+   
+           return review_list;
+   
+       }
+   ```
+
+   
+
 4. Make friend request
 
    User should be able to make friend request if they can provide friend's user id.
+
+   ```java
+       @GetMapping("/addFriendRequest/{friendRequest_id}")
+       public String addFriendRequest(@PathVariable String friendRequest_id) {
+           if (user == null) {
+               return "please register firstly.\n";
+           } else {
+               int code = user.addFriendRequest(friendRequest_id, conn);
+               if (code == 1) {
+                   return "Friend request sent. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int addFriendRequest(String friendRequest_id, Connection conn) {
+           String query = "INSERT INTO friendRequest " +
+                   "(user_id, friend_id) VALUES (\"" + this.user_id + "\", \"" + friendRequest_id + "\");";
+           System.out.println(query);
+           Boolean status = insertSQL(query, conn);
+           if (status == true) {
+               System.out.println("Friend request sent");
+               return 1;
+           } else {
+               System.out.println("Please try again");
+               return 0;
+           }
+       }
+   ```
+
    
+
 5. Accept/Reject friend request
    User should be able to accept or reject any pending friend request.
+
+   ```java
+       @GetMapping("/rejectFriendRequest/{friendRequest_id}")
+       public String rejectFriendRequest(@PathVariable String friendRequest_id) {
+           if (user == null) {
+               return "please register firstly. \n";
+           } else {
+               int code = user.rejectFriendRequest(friendRequest_id, conn);
+               if (code == 1) {
+                   return "Friend request rejected. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   
+       @GetMapping("/acceptFriendRequest/{friendRequest_id}")
+       public String acceptFriendRequest(@PathVariable String friendRequest_id) throws SQLException {
+           if (user == null) {
+               return "please register firstly.\n";
+           } else {
+               int code = user.acceptFriendRequest(friendRequest_id, conn);
+               if (code == 1) {
+                   return "Accept friend request successfully. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int rejectFriendRequest(String friendRequest_id, Connection conn) {
+   
+           String query = "DELETE FROM friendRequest WHERE user_id = \"" + friendRequest_id + "\";";
+   
+           System.out.println(query);
+           Boolean status = insertSQL(query, conn);
+           if (status == true) {
+               System.out.println("Friend request rejected");
+               return 1;
+           } else {
+               System.out.println("Please try again");
+               return 0;
+           }
+       }
+   
+       public int acceptFriendRequest(String friend_id, Connection conn) throws SQLException {
+   
+           int code = 0;
+           String query1 = "INSERT INTO friend " +
+                   "VALUES (" + "\"" + this.user_id + "\", \"" + friend_id + "\"), " +
+                   "(\"" + friend_id + "\", \"" + this.user_id + "\");";
+           String query2 = "DELETE FROM friendRequest WHERE user_id = \"" + friend_id + "\";";
+   
+           System.out.println(query1);
+           System.out.println(query2);
+           try {
+               conn.setAutoCommit(false);
+               Boolean status1 = insertSQL(query1, conn);
+               Boolean status2 = insertSQL(query2, conn);
+               if (!status1 || !status2) {
+                   code = 0;
+                   throw new SQLException("Please try again");
+               }
+               conn.commit();
+               System.out.println("Accept friend request successfully");
+               code = 1;
+           } catch (SQLException e) {
+               e.printStackTrace();
+               conn.rollback();
+           } finally {
+               conn.setAutoCommit(true);
+               return code;
+           }
+       }
+   ```
+
+   
 
 6. Vote(useful, funny, cool) review
    User should be able to vote reviews if they can provide the review id and the type of vote.
 
+   ```java
+       @GetMapping("/vote/review_id={review_id}&&type={i}")
+       public String vote(@PathVariable String review_id, @PathVariable int i) throws SQLException {
+           System.out.println(review_id);
+           System.out.println(i);
+           if (user == null) {
+               return "please register firstly. \n";
+           } else {
+               int code = user.vote(review_id, i, conn);
+               if (code == 1) {
+                   return "vote successfully. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int vote(String review_id, int i, Connection conn) throws SQLException {
+           int code = 0;
+           String type = null;
+           if (i == 0) {
+               type = "useful";
+           } else if (i == 1) {
+               type = "funny";
+           } else if (i == 2) {
+               type = "cool";
+           }
+   //        String user = "0T8Nted2-45Q47vX7S7=2X";
+           if (type != null) {
+               String query1 = "UPDATE user SET " + type + " = " +
+                       "IF (" + type + " is null, 1, " + type + " + 1) WHERE user_id = \"" + this.user_id + "\";";
+               String query2 = "UPDATE review SET " + type + " = " +
+                       "IF (" + type + " is null, 1, " + type + " + 1) WHERE review_id = \"" + review_id + "\";";
+               System.out.println(query1);
+               System.out.println(query2);
+               try {
+                   conn.setAutoCommit(false);
+                   Boolean status1 = insertSQL(query1, conn);
+                   Boolean status2 = insertSQL(query2, conn);
+                   if (!status1 || !status2) {
+                       throw new SQLException("Please try again");
+                   }
+                   conn.commit();
+                   System.out.println("vote successfully");
+                   code = 1;
+               } catch (SQLException e) {
+                   conn.rollback();
+                   e.printStackTrace();
+               } finally {
+                   conn.setAutoCommit(true);
+                   return code;
+               }
+           }
+           return code;
+       }
+   ```
+
+   
+
 7. Follow User
    User should be able to follow user.
+
+   ```java
+       @GetMapping("/follow/user/{user_id}")
+       public String followUser(@PathVariable String user_id) {
+           if (user == null) {
+               return "Please register firstly. \n";
+           } else {
+               int code = user.followUser(user_id, conn);
+               if (code == 1) {
+                   return "follow successfully. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int followUser(String user_id, Connection conn) {
+           String sql = "UPDATE user SET fans = " +
+                   "IF (fans is null, 1, fans + 1) WHERE user_id = \"" + user_id + "\";";
+           Boolean status = insertSQL(sql, conn);
+           if (status == true) {
+               System.out.println("follow successfully");
+               return 1;
+           } else {
+               System.out.println("Please try again");
+               return 0;
+           }
+       }
+   ```
+
+   
 
 8. Choose Elite User
    User could be chosen to be elite user for specific year.
 
+   ```java
+       @GetMapping("/eliteuser/{user_id}")
+       public String eliteUser(@PathVariable String user_id) {
+           if (user == null) {
+               return "Please register firstly. \n";
+           } else {
+               int code = user.eliteUser(user_id, conn);
+               if (code == 1) {
+                   return "Elect user as elite user this year successfully. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int eliteUser(String user_id, Connection conn) {
+           int currentYear = Year.now().getValue();
+           String sql = "INSERT INTO eliteYear VALUES(\"" + user_id + "\", \"" + currentYear + "\");";
+           System.out.println(sql);
+   
+           Boolean status = insertSQL(sql, conn);
+           if (status == true) {
+               System.out.println("Elect user successfully");
+               return 1;
+           } else {
+               System.out.println("Please try again");
+               return 0;
+           }
+       }
+   ```
+
+   
+
 9. Reply Review
    User should be able to reply a review if they can provide the original review id.
+
+   ```java
+       @GetMapping("/reply/review/businessId={business_id}&&stars={stars}&&text={reviewText}&&responseTo={response_to_review_id}")
+       public String replyReview(@PathVariable String business_id, @PathVariable int stars,
+                                 @PathVariable String reviewText, @PathVariable String response_to_review_id) throws SQLException {
+           if (user == null) {
+               return "Please register firstly. \n";
+           } else {
+               int code = user.replyReview(business_id, stars, reviewText, response_to_review_id, conn);
+               if (code == 1) {
+                   return "reply successfully. \n";
+               } else {
+                   return "Please try again. \n";
+               }
+           }
+       }
+   ```
+
+   ```java
+       public int replyReview(String business_id, int stars,
+                              String reviewText, String response_to_review_id, Connection conn) throws SQLException {
+           int code = 0;
+           String review_id = generateUniqueId();
+           String user_id = this.user_id;
+           DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+           LocalDateTime now = LocalDateTime.now();
+           String tmp = dtf.format(now);
+           String[] tmp_split = tmp.split(" ");
+           String date = tmp_split[0];
+           String time = tmp_split[1];
+   
+           // replace some text to avoid insert failure
+           reviewText = reviewText.replaceAll("\"", "");
+   
+           reviewText = reviewText.replaceAll("\\\\", "/");
+           reviewText = reviewText.replaceAll(";", " ");
+   
+           String query1 = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) " +
+                   "VALUES (\"" + review_id + "\", \"" + user_id + "\", \"" + business_id + "\", " +
+                   stars + ", \"" + date + "\", \"" + time + "\", \"" + reviewText + "\");";
+           String query2 = "INSERT INTO reviewRelation(review_id,response_to_review_id) VALUES (\"" + review_id + "\", \"" + response_to_review_id + "\");";
+   
+           System.out.println(query1);
+           System.out.println(query2);
+           try {
+               conn.setAutoCommit(false);
+               Boolean status1 = insertSQL(query1, conn);
+               Boolean status2 = insertSQL(query2, conn);
+               if (!status1 || !status2) {
+                   throw new SQLException("Please try again");
+               }
+               conn.commit();
+               System.out.println("reply successfully");
+               code = 1;
+           } catch (SQLException e) {
+               conn.rollback();
+               e.printStackTrace();
+           } finally {
+               conn.setAutoCommit(true);
+               return code;
+           }
+   
+       }
+   ```
 
    
 
 10. Upvote a Tip
-    User should be able to upvote a tip if they can provide tip id.
+	User should be able to upvote a tip if they can provide tip id.
+
+	```java
+	    @GetMapping("/compliment/tip/tipID={tip_id}&&compliment={i}")
+	    public String complimentTip(@PathVariable String tip_id, @PathVariable int i) throws SQLException {
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            int code = user.complimentTip(tip_id, i, conn);
+	            if (code == 1) {
+	                return "compliment tip successfully. \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int complimentTip(String tip_id, int i, Connection conn) throws SQLException {
+	        int code = 0;
+	        String compliment = null;
+	        String[] compliments = {"compliment_hot", "compliment_more", "compliment_profile", "compliment_cute", "compliment_list", "compliment_note", "compliment_plain", "compliment_cool", "compliment_funny", "compliment_writer", "compliment_photos"};
+	        if (i >= 0 && i <= 10) {
+	            compliment = compliments[i];
+	        }
+	        if (compliment != null) {
+	            String query = "UPDATE tip SET compliment_count = compliment_count + 1 where tip_id = \'" + tip_id + "\';";
+	            String query2 = "UPDATE user SET " + compliment + " = " +
+	                    "IF (" + compliment + " is null, 1, " + compliment + " + 1) WHERE " +
+	                    "user_id = (SELECT user_id FROM tip WHERE tip_id = \"" + tip_id + "\");";
+	            System.out.println(query);
+	            System.out.println(query2);
+	            try {
+	                conn.setAutoCommit(false);
+	                Boolean status1 = insertSQL(query, conn);
+	                Boolean status2 = insertSQL(query2, conn);
+	                if (!status1 || !status2) {
+	                    throw new SQLException("Please try again");
+	                }
+	                conn.commit();
+	                System.out.println("compliment tip successfully");
+	                code = 1;
+	            } catch (SQLException e) {
+	                conn.rollback();
+	                e.printStackTrace();
+	            } finally {
+	                conn.setAutoCommit(true);
+	                return code;
+	            }
+	        }
+	        return code;
+	    }
+	```
+
+	
 
 11. Create a Group
-    User should be able to create a group if they can provide list of user id(s).
+	User should be able to create a group if they can provide list of user id(s).
+
+	```java
+	    @PostMapping("/creategroup")
+	    public String createGroup(@RequestBody CreateGroupBean createGroupBean) throws SQLException {
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            ArrayList<String> friends = createGroupBean.getFriends();
+	            String groupName = createGroupBean.getGroupName();
+	            int code = user.createGroup(groupName, friends, conn);
+	            if (code == 1) {
+	                return "create group successfully. \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int createGroup(String groupname, ArrayList<String> friends, Connection conn) throws SQLException {
+	        int code = 0;
+	        if (groupname == null || groupname.length() == 0) {
+	            System.out.println("Error: Empty group name.");
+	            return code;
+	        }
+	
+	        String group_id = generateUniqueId();
+	
+	        String sql = "INSERT INTO group_info (group_id,name) VALUES (\'" + group_id + "\',\'" + groupname + "\');";
+	        String sql2 = "INSERT INTO user_group (group_id,user_id) VALUES (\'" + group_id + "\',\'" + this.user_id + "\');";
+	
+	        try {
+	            conn.setAutoCommit(false);
+	            Boolean status = insertSQL(sql, conn);
+	            Boolean status2 = insertSQL(sql2, conn);
+	            if (!status || !status2) {
+	                throw new SQLException("Can not create group, Please try again");
+	            }
+	            for (int i = 0; i < friends.size(); i++) {
+	                String query = "INSERT INTO user_group (group_id,user_id) VALUES (\'" + group_id + "\',\'" + friends.get(i) + "\');";
+	                Boolean status3 = insertSQL(query, conn);
+	                if (!status3) {
+	                    throw new SQLException("Can not add friends, Please try again");
+	                }
+	            }
+	            conn.commit();
+	            System.out.println("create group successfully");
+	            code = 1;
+	        } catch (SQLException e) {
+	            conn.rollback();
+	            e.printStackTrace();
+	        } finally {
+	            conn.setAutoCommit(true);
+	            return code;
+	        }
+	
+	    }
+	```
+
+	
 
 12. Join an existing group
-    User should be able to join an existing group if they can provide a group id.
+	User should be able to join an existing group if they can provide a group id.
+
+	```java
+	    @GetMapping("/join/group/groupID={group_id}")
+	    public String joinGroup(@PathVariable String group_id) throws SQLException {
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            int code = user.joinGroup(group_id, conn);
+	            if (code == 1) {
+	                return "join group successfully. \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int joinGroup(String group_id, Connection conn) throws SQLException {
+	        int code = 0;
+	        String sql = "INSERT INTO user_group (group_id,user_id) VALUES (\'" + group_id + "\',\'" + this.user_id + "\');";
+	
+	        try {
+	            Boolean status = insertSQL(sql, conn);
+	            if (!status) {
+	                throw new SQLException("Can not join group, Please try again");
+	            }
+	            conn.commit();
+	            System.out.println("Joined group successfully");
+	            code = 1;
+	
+	        } catch (SQLException e) {
+	            conn.rollback();
+	            e.printStackTrace();
+	            return code;
+	        }
+	        return code;
+	    }
+	```
+
+	
 
 13. Follow a Business(Restaurant)
-    User should be able to follow a business(restaurant) if they can provide the business id.
+	User should be able to follow a business(restaurant) if they can provide the business id.
+
+	```java
+	    @GetMapping("/follow/restaurant/businessId='{business_id}'")
+	    public String followBusiness(@PathVariable String business_id) throws SQLException {
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            int code = user.followBusiness(business_id, conn);
+	            if (code == 1) {
+	                return "Follow restaurant successfully \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int followBusiness(String business_id, Connection conn) throws SQLException {
+	        int code = 0;
+	        String sql = "INSERT INTO user_follow_business (user_id,business_id) VALUES (\'" + this.user_id + "\',\'" + business_id + "\');";
+	        System.out.println(sql);
+	        try {
+	            Boolean status = insertSQL(sql, conn);
+	            if (!status) {
+	                throw new SQLException("Can not follow restaurant, Please try again");
+	            }
+	//            conn.commit();
+	            System.out.println("Follow restaurant successfully");
+	            code = 1;
+	
+	        } catch (SQLException e) {
+	//            conn.rollback();
+	            e.printStackTrace();
+	            return code;
+	        }
+	        return code;
+	    }
+	```
+
+	
 
 14. Write a Review on a Business(Restaurant)
-    User should be able to post(write an review) on topic(business/restaurant).
+	User should be able to post(write an review) on topic(business/restaurant).
+
+	```java
+	    @GetMapping("/write/review/businessId={business_id}&&stars={stars}&&text={reviewText}")
+	    public String writeReview(@PathVariable String business_id, @PathVariable int stars,
+	                              @PathVariable String reviewText) throws SQLException {
+	        System.out.println("review text: "+reviewText);
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            int code = user.writeReview(business_id, stars, reviewText, conn);
+	            if (code == 1) {
+	                return "Review written successfully. \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int writeReview(String business_id, int stars, String review_text, Connection conn) throws SQLException {
+	        int code = 0;
+	        String review_id = generateUniqueId();
+	
+	        //get current date and time
+	        LocalDateTime curTime = LocalDateTime.now();
+	        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+	        String reviewDate = curTime.format(dateFormat);
+	        String reviewTime = curTime.format(timeFormat);
+	
+	        // replace some text to avoid insert failure
+	        review_text = review_text.replaceAll("\"", "");
+	        review_text = review_text.replaceAll("\\\\", "/");
+	        review_text = review_text.replaceAll(";", " ");
+	
+	        String sql = "INSERT INTO review (review_id, user_id, business_id, stars, reviewDate, reviewTime, reviewText) VALUES "
+	                + "(\'" + review_id + "\',\'" + this.user_id + "\',\'" + business_id + "\',\'" + stars + "\',\'" + reviewDate + "\',\'" + reviewTime + "\',\"" + review_text + "\");";
+	
+	        System.out.println(sql);
+	
+	        try {
+	            Boolean status = insertSQL(sql, conn);
+	            if (!status) {
+	                throw new SQLException("Can not write review, Please try again");
+	            }
+	
+	            System.out.println("Review written successfully");
+	            code = 1;
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            return code;
+	        }
+	        return code;
+	
+	    }
+	```
+
+	
 
 15. Write a Tip on a Business(Restaurant)
-    User should be able to write a tip on topic(business/restaurant).
+	User should be able to write a tip on topic(business/restaurant).
+
+	```java
+	    @GetMapping("/write/tip/businessId={business_id}&&text={tipText}")
+	    public String writeTip(@PathVariable String business_id, @PathVariable String tipText) throws SQLException {
+	        if (user == null) {
+	            return "Please register firstly. \n";
+	        } else {
+	            int code = user.writeTip(business_id, tipText, conn);
+	            if (code == 1) {
+	                return "Tip written successfully. \n";
+	            } else {
+	                return "Please try again. \n";
+	            }
+	        }
+	    }
+	```
+
+	```java
+	    public int writeTip(String business_id, String tipText, Connection conn) throws SQLException {
+	        int code = 0;
+	
+	
+	        //get current date and time
+	        LocalDateTime curTime = LocalDateTime.now();
+	        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+	        String postDate = curTime.format(dateFormat);
+	        String postTime = curTime.format(timeFormat);
+	
+	        // replace some text to avoid insert failure
+	        tipText = tipText.replaceAll("\"", "");
+	        tipText = tipText.replaceAll("\\\\", "/");
+	        tipText = tipText.replaceAll(";", " ");
+	
+	
+	        String sql = "INSERT INTO tip (user_id, business_id, postDate, postTime, tipText) VALUES "
+	                + "(\'" + this.user_id + "\',\'" + business_id + "\',\'" + postDate + "\',\'" + postTime + "\',\"" + tipText + "\");";
+	        System.out.println(sql);
+	        try {
+	            Boolean status = insertSQL(sql, conn);
+	            if (!status) {
+	                throw new SQLException("Can not write tip, Please try again");
+	            }
+	
+	            System.out.println("Tip written successfully");
+	            code = 1;
+	        } catch (SQLException e) {
+	
+	            e.printStackTrace();
+	            return code;
+	        }
+	        
+	        return code;
+	    }
+	```
+
+	
 
 
 
