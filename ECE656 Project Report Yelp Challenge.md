@@ -4,9 +4,19 @@ Student Name: Libang Liang, Student ID: 20662701
 
 Student Name: Zhiming Lin, Student ID: 20835645
 
+#### 0. Introduction
 
+In this project, we built a simple social network. First we created entity-relationship model for this network, then we translated our ER Model into relational database design. We populated Yelp Dataset using python generated sql files, and wrote list of APIs that allow client to initial a post on topics, follow other users, form groups, refresh posts, reply posts etc. using Java Spring Boot framework. Tests on different written APIs are also written.
 
 #### 1. ER Model
+
+<img src="ER Model.png" alt="ER Model" style="zoom:50%;" />
+
+
+
+
+
+
 
 
 
@@ -245,6 +255,8 @@ CREATE TABLE attrBusinessParking (
 ```
 
 
+
+The 
 
 
 
