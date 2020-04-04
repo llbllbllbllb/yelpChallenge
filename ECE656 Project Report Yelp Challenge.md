@@ -2,13 +2,251 @@
 
 Student Name: Libang Liang, Student ID: 20662701
 
-Student Name: Zhiming Lin, Student ID:
+Student Name: Zhiming Lin, Student ID: 20835645
 
 
 
 #### 1. ER Model
 
+
+
 #### 2. Create Tables
+
+In order to satify all the requirements and functions, we create the tables as follow:
+
+User:
+
+```mysql
+DROP TABLE IF EXISTS user;
+-- SHOW WARNINGS;
+CREATE TABLE user (
+  user_id CHAR(22) NOT NULL,
+  name VARCHAR(100),
+  review_count INT DEFAULT 0,
+  yelping_since DATE,
+  useful INT DEFAULT 0,
+  funny INT DEFAULT 0,
+  cool INT DEFAULT 0,
+  fans INT DEFAULT 0,
+  average_stars FLOAT,
+  compliment_hot INT DEFAULT 0,
+  compliment_more INT DEFAULT 0,
+  compliment_profile INT DEFAULT 0,
+  compliment_cute INT DEFAULT 0,
+  compliment_list INT DEFAULT 0,
+  compliment_note INT DEFAULT 0,
+  compliment_plain INT DEFAULT 0,
+  compliment_cool INT DEFAULT 0,
+  compliment_funny INT DEFAULT 0,
+  compliment_writer INT DEFAULT 0,
+  compliment_photos INT DEFAULT 0,
+
+  PRIMARY KEY(user_id)
+
+);
+```
+
+One user can have zero to many friends. One user can be friend of zero to many friends. 
+
+Therefore, friend table:
+
+```mysql
+DROP TABLE IF EXISTS friend;
+-- SHOW WARNINGS;
+CREATE TABLE friend (
+  user_id CHAR(22) NOT NULL,
+  friend_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id, friend_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(friend_id) REFERENCES user(user_id)
+
+);
+```
+
+Also, one user can deny or accept the friend request from other users. FriendRequest table is needed to implement such function.
+
+```mysql
+DROP TABLE IF EXISTS friendRequest;
+-- SHOW WARNINGS;
+CREATE TABLE friendRequest (
+  user_id CHAR(22) NOT NULL,
+  friend_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(user_id, friend_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id),
+  FOREIGN KEY(friend_id) REFERENCES user(user_id)
+
+);
+```
+
+One user can be elected in different years, it would be better to seperate them into different tables.
+
+eliteYear:
+
+```mysql
+DROP TABLE IF EXISTS eliteYear;
+-- SHOW WARNINGS;
+CREATE TABLE eliteYear (
+  user_id CHAR(22) NOT NULL,
+  eliteYear INT(4) NOT NULL,
+
+  PRIMARY KEY(user_id, eliteYear),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+
+);
+```
+
+One user can form zero to many groups. One group must contain one user. Every group has its own name. In order to reduce duplications, we create two tables for groups, user_group and group_info.
+
+User_group table: 
+
+```mysql
+DROP TABLE IF EXISTS user_group;
+-- SHOW WARNINGS;
+CREATE TABLE user_group (
+  group_id CHAR(22) NOT NULL,
+  user_id CHAR(22) NOT NULL,
+
+  PRIMARY KEY(group_id,user_id),
+  FOREIGN KEY(user_id) REFERENCES user(user_id)
+  FOREIGN KEY(group_id) REFERENCES group_info(group_id)
+);
+```
+
+group_info table:
+
+```mysql
+DROP TABLE IF EXISTS group_info;
+-- SHOW WARNINGS;
+CREATE TABLE group_info (
+  group_id CHAR(22) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+
+  PRIMARY KEY(group_id)
+);
+```
+
+
+
+For business (restaurants):
+
+```mysql
+DROP TABLE IF EXISTS business;
+-- SHOW WARNINGS;
+CREATE TABLE business (
+  business_id CHAR(22) NOT NULL,
+  name VARCHAR(100),
+  address VARCHAR(200),
+  city VARCHAR(50),
+  state VARCHAR(5),
+  postal_code VARCHAR(10),
+  latitude FLOAT,
+  longitude FLOAT,
+  stars FLOAT,
+  review_count FLOAT,
+  is_open INT,
+
+  PRIMARY KEY(business_id)
+);
+```
+
+Because every business has different attributes. The attribute may be mulitvalues or single value. Hence, we create a table for single attribute and tables for multivalues attributes.
+
+Single attribute: attributes:
+
+```mysql
+DROP TABLE IF EXISTS attributes;
+-- SHOW WARNINGS;
+CREATE TABLE attributes (
+  business_id CHAR(22) NOT NULL,
+
+  GoodForKids BOOLEAN DEFAULT NULL,
+  RestaurantsReservations BOOLEAN DEFAULT NULL,
+  Caters BOOLEAN DEFAULT NULL,
+  NoiseLevel VARCHAR(10) DEFAULT NULL,
+  RestaurantsTableService BOOLEAN DEFAULT NULL,
+  RestaurantsTakeOut BOOLEAN DEFAULT NULL,
+  RestaurantsPriceRange2 INT DEFAULT NULL,
+  OutdoorSeating BOOLEAN DEFAULT NULL,
+  BikeParking BOOLEAN DEFAULT NULL,
+  HasTV BOOLEAN DEFAULT NULL,
+  WiFi VARCHAR(5) DEFAULT NULL,
+  Alcohol VARCHAR(20) DEFAULT NULL,
+  RestaurantsAttire VARCHAR(10) DEFAULT NULL,
+  RestaurantsGoodForGroups BOOLEAN DEFAULT NULL,
+  RestaurantsDelivery BOOLEAN DEFAULT NULL,
+  BusinessAcceptsCreditCards BOOLEAN DEFAULT NULL,
+  BusinessAcceptsBitcoin BOOLEAN DEFAULT NULL,
+  ByAppointmentOnly BOOLEAN DEFAULT NULL,
+  AcceptsInsurance BOOLEAN DEFAULT NULL,
+  GoodForDancing BOOLEAN DEFAULT NULL,
+  CoatCheck BOOLEAN DEFAULT NULL,
+  HappyHour BOOLEAN DEFAULT NULL,
+  WheelchairAccessible BOOLEAN DEFAULT NULL,
+  DogsAllowed BOOLEAN DEFAULT NULL,
+  BYOBCorkage VARCHAR(100) DEFAULT NULL,
+  DriveThru BOOLEAN DEFAULT NULL,
+  Smoking VARCHAR(10) DEFAULT NULL,
+  AgesAllowed VARCHAR(10) DEFAULT NULL,
+  Corkage BOOLEAN DEFAULT NULL,
+  BYOB BOOLEAN DEFAULT NULL,
+  Open24Hours BOOLEAN DEFAULT NULL,
+  RestaurantsCounterService BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+);
+```
+
+
+
+The "GoodForMeal" is multivalues attribute:
+
+```mysql
+DROP TABLE IF EXISTS attrGoodForMeal;
+-- SHOW WARNINGS;
+CREATE TABLE attrGoodForMeal (
+  business_id CHAR(22) NOT NULL,
+
+  dessert BOOLEAN DEFAULT NULL,
+  latenight BOOLEAN DEFAULT NULL,
+  lunch BOOLEAN DEFAULT NULL,
+  dinner BOOLEAN DEFAULT NULL,
+  brunch BOOLEAN DEFAULT NULL,
+  breakfast BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+The attrBusinessParking:
+
+```mysql
+DROP TABLE IF EXISTS attrBusinessParking;
+-- SHOW WARNINGS;
+CREATE TABLE attrBusinessParking (
+  business_id CHAR(22) NOT NULL,
+
+  garage BOOLEAN DEFAULT NULL,
+  street BOOLEAN DEFAULT NULL,
+  validated BOOLEAN DEFAULT NULL,
+  lot BOOLEAN DEFAULT NULL,
+  valet BOOLEAN DEFAULT NULL,
+
+  PRIMARY KEY(business_id),
+  FOREIGN KEY(business_id) REFERENCES business(business_id)
+
+);
+```
+
+
+
+
 
 #### 3. Populating the data
 
