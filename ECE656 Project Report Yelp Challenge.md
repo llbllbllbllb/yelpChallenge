@@ -10,11 +10,11 @@ In this project, we built a simple social network. First we created entity-relat
 
 #### 1. ER Model
 
+<img src="/Users/ivanleung/Desktop/ECE656/yelpChallenge/ER Model.png" alt="ER Model" style="zoom:50%;" />
 
 
-<img src="ER Model.png" alt="ER Model" style="zoom:50%;" />
 
-
+In the entity-relationship schema, we have 5 entities: User, Business, Review, Photo and Group. One user can have $0$ to $N$ friend(s), so there is a many-to-many relationships between users of Is-Friend relation. On the other hand, a user can be in $0$ to $N$ group(s) while a group must has at least 2 members. User can follow $0$ to $N$ Business while Business can be followed by $0$ to $N$ users,  so there is a many-to-many relationship for User-Follow-Business relation. The same situation applies to Tip relation: User can write $0$ to $N$ tips on a Business and Business can hold tips from many users. There is a ternary relationships between User, Review and Business, which means user can write review on a business. Also, review itself can be replied by another review, so there is a Reply-to relation. Finally, Business can has $0$ to $N$ photos while one photo must belong to one Business, so a Is-Photo-Of relationship is a one to many relation.
 
 #### 2. Create Tables
 
